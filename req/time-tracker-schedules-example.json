@@ -1,0 +1,292 @@
+{
+  "current_datetime": "2026-06-06T12:00:00+03:00",
+  "schedules": [
+    {
+      "date": "2026-06-06",
+      "schedule": {
+        "activities": [
+          {
+            "id": 1,
+            "activityTypeId": 40101,
+            "start": 0,
+            "end": 480,
+            "delta": 480,
+            "active": 470,
+            "interruptBreaks": 5,
+            "distractionBreaks": 5,
+            "comment": "Ночной сон",
+            "status": "done"
+          },
+          {
+            "id": 2,
+            "activityTypeId": 40301,
+            "start": 480,
+            "end": 510,
+            "delta": 30,
+            "active": 28,
+            "interruptBreaks": 1,
+            "distractionBreaks": 1,
+            "comment": "Утренняя гигиена",
+            "status": "done"
+          },
+          {
+            "id": 3,
+            "activityTypeId": 40401,
+            "start": 540,
+            "end": 600,
+            "delta": 60,
+            "active": 55,
+            "interruptBreaks": 3,
+            "distractionBreaks": 2,
+            "comment": "Работа 1",
+            "status": "done"
+          },
+          {
+            "id": 4,
+            "activityTypeId": 40201,
+            "start": 570,
+            "end": 600,
+            "delta": 30,
+            "active": 25,
+            "interruptBreaks": 2,
+            "distractionBreaks": 3,
+            "comment": "Завтрак (пересекается с работой 1)",
+            "status": "done"
+          },
+          {
+            "id": 5,
+            "activityTypeId": 40401,
+            "start": 600,
+            "end": 660,
+            "delta": 60,
+            "active": 52,
+            "interruptBreaks": 4,
+            "distractionBreaks": 4,
+            "comment": "Работа 2",
+            "status": "done"
+          },
+          {
+            "id": 6,
+            "activityTypeId": 40202,
+            "start": 615,
+            "end": 645,
+            "delta": 30,
+            "active": 27,
+            "interruptBreaks": 1,
+            "distractionBreaks": 2,
+            "comment": "Завтрак-2 (пересекается)",
+            "status": "done"
+          },
+          {
+            "id": 7,
+            "activityTypeId": 30101,
+            "start": 630,
+            "end": 660,
+            "delta": 30,
+            "active": 25,
+            "interruptBreaks": 3,
+            "distractionBreaks": 2,
+            "comment": "Прогулка (пересекается, 3 одновременно)",
+            "status": "done"
+          },
+          {
+            "id": 8,
+            "activityTypeId": 40401,
+            "start": 660,
+            "end": 720,
+            "delta": 60,
+            "active": 58,
+            "interruptBreaks": 1,
+            "distractionBreaks": 1,
+            "comment": "Работа 3",
+            "status": "done"
+          },
+          {
+            "id": 9,
+            "activityTypeId": 20101,
+            "start": 660,
+            "end": 720,
+            "delta": 60,
+            "active": 55,
+            "interruptBreaks": 3,
+            "distractionBreaks": 2,
+            "comment": "Бассейн (пересекается с работой 3)",
+            "status": "done"
+          },
+          {
+            "id": 10,
+            "activityTypeId": 40401,
+            "start": 720,
+            "end": 780,
+            "delta": 60,
+            "active": 57,
+            "interruptBreaks": 2,
+            "distractionBreaks": 1,
+            "comment": "Работа 4",
+            "status": "done"
+          },
+          {
+            "id": 11,
+            "activityTypeId": 40203,
+            "start": 750,
+            "end": 780,
+            "delta": 30,
+            "active": 28,
+            "interruptBreaks": 1,
+            "distractionBreaks": 1,
+            "comment": "Обед (пересекается)",
+            "status": "done"
+          },
+          {
+            "id": 12,
+            "activityTypeId": 40401,
+            "start": 780,
+            "end": 840,
+            "delta": 60,
+            "active": 50,
+            "interruptBreaks": 5,
+            "distractionBreaks": 5,
+            "comment": "Работа 5",
+            "status": "done"
+          },
+          {
+            "id": 13,
+            "activityTypeId": 30401,
+            "start": 810,
+            "end": 870,
+            "delta": 60,
+            "active": 55,
+            "interruptBreaks": 3,
+            "distractionBreaks": 2,
+            "comment": "Чтение (пересекается)",
+            "status": "done"
+          },
+          {
+            "id": 14,
+            "activityTypeId": 30301,
+            "start": 810,
+            "end": 840,
+            "delta": 30,
+            "active": 27,
+            "interruptBreaks": 2,
+            "distractionBreaks": 1,
+            "comment": "Обучение (пересекается, 3 одновременно)",
+            "status": "done"
+          },
+          {
+            "id": 15,
+            "activityTypeId": 40204,
+            "start": 825,
+            "end": 855,
+            "delta": 30,
+            "active": 28,
+            "interruptBreaks": 1,
+            "distractionBreaks": 1,
+            "comment": "Ужин (4 одновременно: работа5, чтение, обучение, ужин)",
+            "status": "done"
+          },
+          {
+            "id": 16,
+            "activityTypeId": 40401,
+            "start": 840,
+            "end": 900,
+            "delta": 60,
+            "active": 56,
+            "interruptBreaks": 2,
+            "distractionBreaks": 2,
+            "comment": "Работа 6",
+            "status": "done"
+          },
+          {
+            "id": 17,
+            "activityTypeId": 40205,
+            "start": 855,
+            "end": 885,
+            "delta": 30,
+            "active": 27,
+            "interruptBreaks": 2,
+            "distractionBreaks": 1,
+            "comment": "Ужин-2 (пересекается с работой6 и чтением)",
+            "status": "done"
+          },
+          {
+            "id": 18,
+            "activityTypeId": 30401,
+            "start": 870,
+            "end": 900,
+            "delta": 30,
+            "active": 28,
+            "interruptBreaks": 1,
+            "distractionBreaks": 1,
+            "comment": "Чтение (продолжение)",
+            "status": "done"
+          },
+          {
+            "id": 19,
+            "activityTypeId": 40302,
+            "start": 900,
+            "end": 915,
+            "delta": 15,
+            "active": 14,
+            "interruptBreaks": 0,
+            "distractionBreaks": 1,
+            "comment": "Вечерняя гигиена",
+            "status": "done"
+          },
+          {
+            "id": 20,
+            "activityTypeId": 40101,
+            "start": 930,
+            "end": 990,
+            "delta": 60,
+            "interruptBreaks": 2,
+            "distractionBreaks": 2,
+            "active": 56,
+            "comment": "Подготовка ко сну",
+            "status": "planned"
+          }
+        ]
+      }
+    },
+    {
+      "date": "2026-06-05",
+      "schedule": {
+        "activities": [
+          {
+            "id": 1,
+            "activityTypeId": 40101,
+            "start": 0,
+            "end": 480,
+            "delta": 480,
+            "active": 470,
+            "interruptBreaks": 5,
+            "distractionBreaks": 5,
+            "status": "done"
+          },
+          {
+            "id": 2,
+            "activityTypeId": 40201,
+            "start": 510,
+            "end": 540,
+            "delta": 30,
+            "active": 28,
+            "interruptBreaks": 1,
+            "distractionBreaks": 1,
+            "status": "done"
+          },
+          {
+            "id": 3,
+            "activityTypeId": 40401,
+            "start": 540,
+            "end": 720,
+            "delta": 180,
+            "active": 170,
+            "interruptBreaks": 5,
+            "distractionBreaks": 5,
+            "status": "done"
+          }
+        ]
+      }
+    }
+  ]
+}

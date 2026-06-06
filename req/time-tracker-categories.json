@@ -1,0 +1,839 @@
+{
+  "_service_context": {
+    "filename": "time-tracker-categories.json",
+    "description": "Для проекта Геймификация жизни. Набор из 7 рангов с весовыми коэффициентами для учёта времени. Цель: сводить день к одному числу (балансу), чтобы отслеживать тренд и корректировать фокус.",
+    "calculation_formula": "Баланс_дня = Σ(часы * rate), где rate = coefficient * 375 руб.",
+    "measurement_rule": "Все активности учитываются в минутах. Обжорство условно измеряется в минутах: стандартное - 60 минут, небольшое - 30 минут.",
+    "formulas": [
+      {
+        "name": "rate_base_rule",
+        "text": "rate = coefficient * 375 ₽ (базовая ставка часа Делегируемых, равна 1500 / 4). Все веса считаются относительно k5=1."
+      },
+      {
+        "name": "Делегируемые",
+        "text": "k5 = 1 (база)"
+      },
+      {
+        "name": "Персональные",
+        "text": "k4 = k5 * 4 = 4 (сравниваем мою работу и уборку: моя целевая ставка 3000 руб/час, ставка клинера 1500 руб/час, эффективность клинера в 2 раза выше при уборке)"
+      },
+      {
+        "name": "Стратегические",
+        "text": "k2 = k4 * 16 = 64 (текущая ставка 1500 рублей в час, после нахождения новой работы я буду зарабатывать 3000 рублей в час, для поиска работы надо 97 часов, после смены работы я дополнительно заработаю ≈ 2 328 000 рублей за 12 месяцев, (2 328 000 рублей / 97 часов) / 1500 рублей = 16)"
+      },
+      {
+        "name": "Развивающие",
+        "text": "k3 = k2 / 4 = 16 (сравниваем спорт и спокойную прогулку: прогулка требует в 4 раза меньше волевой энергии, чем спорт)"
+      },
+      {
+        "name": "Творческие",
+        "text": "k1 = k2 * 4 = 256 (по аналогии с предыдущими формулами - увеличиваем в 4 раза)"
+      },
+      {
+        "name": "Паразитные",
+        "text": "k6 = -k3 = -16 (сопоставим по влиянию с развивающими активностями)"
+      },
+      {
+        "name": "Деструктивные",
+        "text": "k7 = -k2 * 4 = -256 (сравниваем обжорство и спорт по калориям: 1 час обжорства ≈ +2000 ккал, активный спорт ≈ 500 ккал/ч, требуется 4 часа спорта для компенсации)"
+      }
+    ]
+  },
+  "ranks": [
+    {
+      "id": 1,
+      "name": "Творческие",
+      "name_en": "Creative",
+      "description": "Создание оригинального продукта: музыка, тексты, аранжировки. Якорь идентичности и смысла.",
+      "color": "DarkOrchid",
+      "coefficient": 256,
+      "rate": 96000
+    },
+    {
+      "id": 2,
+      "name": "Стратегические",
+      "name_en": "Strategic",
+      "description": "Действия с отложенным, но кратно большим возвратом: поиск работы, спорт, семья, обучение.",
+      "color": "Aquamarine",
+      "coefficient": 64,
+      "rate": 24000
+    },
+    {
+      "id": 3,
+      "name": "Развивающие",
+      "name_en": "Rising",
+      "description": "Входящая информация и мягкое расширение кругозора: чтение, прогулки, культура, фоновое обучение.",
+      "color": "CadetBlue",
+      "coefficient": 16,
+      "rate": 6000
+    },
+    {
+      "id": 4,
+      "name": "Персональные",
+      "name_en": "Personal",
+      "description": "Базовые потребности и обязательства, которые выполняются только лично: сон, еда, гигиена, текущая работа.",
+      "color": "Silver",
+      "coefficient": 4,
+      "rate": 1500
+    },
+    {
+      "id": 5,
+      "name": "Делегируемые",
+      "name_en": "Delegatable",
+      "description": "Задачи, которые я выполняю сам, но их можно было бы передать другим или автоматизировать.",
+      "color": "Peru",
+      "coefficient": 1,
+      "rate": 375
+    },
+    {
+      "id": 6,
+      "name": "Паразитные",
+      "name_en": "Parasitic",
+      "description": "Активности, которые поглощают время и энергию без отдачи, тормозя прогресс к целям.",
+      "color": "Sienna",
+      "coefficient": -16,
+      "rate": -6000
+    },
+    {
+      "id": 7,
+      "name": "Деструктивные",
+      "name_en": "Destructive",
+      "description": "Эпизоды компульсивного поведения с высоким негативным воздействием на здоровье и результаты.",
+      "color": "SaddleBrown",
+      "coefficient": -256,
+      "rate": -96000
+    }
+  ],
+  "categories": [
+    {
+      "id": 101,
+      "rank_id": 1,
+      "name": "Сочинение музыки",
+      "description": "Сочинение музыки"
+    },
+    {
+      "id": 102,
+      "rank_id": 1,
+      "name": "Сочинение стихов",
+      "description": "Сочинение стихов"
+    },
+    {
+      "id": 103,
+      "rank_id": 1,
+      "name": "Сочинение прозы",
+      "description": "Сочинение прозы"
+    },
+    {
+      "id": 201,
+      "rank_id": 2,
+      "name": "Спорт",
+      "description": "Физическая активность и восстановление ресурса тела.",
+      "color": "LimeGreen"
+    },
+    {
+      "id": 202,
+      "rank_id": 2,
+      "name": "Врачи",
+      "description": "Врачи",
+      "color": "GreenYellow"
+    },
+    {
+      "id": 203,
+      "rank_id": 2,
+      "name": "Поиск работы",
+      "description": "Активности для перехода на целевую позицию руководителя тестирования.",
+      "color": "Blue"
+    },
+    {
+      "id": 204,
+      "rank_id": 2,
+      "name": "Знакомства и отношения",
+      "description": "Развитие социальной привлекательности, знакомства с девушками, свидания и построение романтических связей.",
+      "color": "Pink"
+    },
+    {
+      "id": 205,
+      "rank_id": 2,
+      "name": "Стратегическое планирование",
+      "description": "Еженедельный разбор целей, приоритетов и дорожных карт. Фиксация плана на 7–30 дней. Лимит: 1 час/сессия.",
+      "color": "Fuchsia"
+    },
+    {
+      "id": 301,
+      "rank_id": 3,
+      "name": "Прогулки",
+      "description": "Ходьба на свежем воздухе",
+      "color": "MediumSeaGreen"
+    },
+    {
+      "id": 302,
+      "rank_id": 3,
+      "name": "Разработка курсов",
+      "description": "Создание и актуализация учебных материалов по тестированию ПО",
+      "color": "RoyalBlue"
+    },
+    {
+      "id": 303,
+      "rank_id": 3,
+      "name": "Обучение",
+      "description": "Целенаправленное развитие профессиональных навыков.",
+      "color": "CornflowerBlue"
+    },
+    {
+      "id": 304,
+      "rank_id": 3,
+      "name": "Эрудиция",
+      "description": "Потребление качественного контента для расширения кругозора."
+    },
+    {
+      "id": 305,
+      "rank_id": 3,
+      "name": "Музлит",
+      "description": "Прослушивание музыки."
+    },
+    {
+      "id": 306,
+      "rank_id": 3,
+      "name": "Геймификация",
+      "description": "Разработка и улучшение системы учёта времени."
+    },
+    {
+      "id": 307,
+      "rank_id": 3,
+      "name": "СПА",
+      "description": "Водно-тепловые процедуры для расслабления и восстановления тела без высокой интенсивности.",
+      "color": "MediumAquamarine"
+    },
+    {
+      "id": 401,
+      "rank_id": 4,
+      "name": "Сон",
+      "description": "Восстановление ресурса и циркадный ритм.",
+      "color": "DarkSeaGreen"
+    },
+    {
+      "id": 402,
+      "rank_id": 4,
+      "name": "Еда",
+      "description": "Приём пищи без компульсивных эпизодов.",
+      "color": "FireBrick"
+    },
+    {
+      "id": 403,
+      "rank_id": 4,
+      "name": "Гигиена",
+      "description": "Базовый уход за телом и поддержание чистоты. Утренняя гигиена - это туалет, помыть руки, почистить зубы, выпить воды, принять душ, снова выпить воды.",
+      "color": "MediumAquamarine"
+    },
+    {
+      "id": 404,
+      "rank_id": 4,
+      "name": "Текущая работа",
+      "description": "Преподавание тестирования ПО и смежные задачи.",
+      "color": "DarkBlue"
+    },
+    {
+      "id": 405,
+      "rank_id": 4,
+      "name": "Логистика-личная",
+      "description": "Логистика, которую не делегируешь",
+      "color": "LightGrey"
+    },
+    {
+      "id": 501,
+      "rank_id": 5,
+      "name": "Быт-дом",
+      "description": "Бытовые дела внутри жилья, выполняемые регулярно."
+    },
+    {
+      "id": 502,
+      "rank_id": 5,
+      "name": "Быт-внешний",
+      "description": "Задачи вне дома, требующие выхода или выезда. Обычно связаны с расходом денег."
+    },
+    {
+      "id": 503,
+      "rank_id": 5,
+      "name": "Быт-редко",
+      "description": "Бытовые задачи с редким повторением: раз в 2 недели, раз в месяц или реже."
+    },
+    {
+      "id": 504,
+      "rank_id": 5,
+      "name": "Логистика-делегируемая",
+      "description": "Логистика, которую можно делегировать, например, сняв квартиру рядом с работой или используя такси вместо метро: дорога на работу, с работы, и т.д."
+    },
+    {
+      "id": 601,
+      "rank_id": 6,
+      "name": "Цифровые паразиты",
+      "description": "Компьютерные игры, Youtube, соцсети, новости"
+    },
+    {
+      "id": 602,
+      "rank_id": 6,
+      "name": "Пустое время",
+      "description": "Бесцельные состояния и псевдозанятость без результата (сидел-тупил), руминация, трудности с засыпанием и пассивное ожидание."
+    },
+    {
+      "id": 701,
+      "rank_id": 7,
+      "name": "Обжорство",
+      "description": "Компульсивное переедание, нарушающее режим и здоровье."
+    }
+  ],
+  "activity_types": [
+    {
+      "id": 10101,
+      "category_id": 101,
+      "name": "Сочинение музыки",
+      "is_potential": false
+    },
+    {
+      "id": 10201,
+      "category_id": 102,
+      "name": "Сочинение стихов",
+      "is_potential": false
+    },
+    {
+      "id": 10301,
+      "category_id": 103,
+      "name": "Сочинение прозы",
+      "is_potential": false
+    },
+    {
+      "id": 20101,
+      "category_id": 201,
+      "name": "Бассейн",
+      "is_potential": false
+    },
+    {
+      "id": 20102,
+      "category_id": 201,
+      "name": "Зарядка",
+      "is_potential": false
+    },
+    {
+      "id": 20103,
+      "category_id": 201,
+      "name": "Контрастный душ",
+      "is_potential": false
+    },
+    {
+      "id": 20201,
+      "category_id": 202,
+      "name": "Врачи",
+      "is_potential": false
+    },
+    {
+      "id": 20301,
+      "category_id": 203,
+      "name": "Поиск работы",
+      "is_potential": false
+    },
+    {
+      "id": 20302,
+      "category_id": 203,
+      "name": "Подготовка резюме",
+      "is_potential": false
+    },
+    {
+      "id": 20303,
+      "category_id": 203,
+      "name": "Собеседования",
+      "is_potential": false
+    },
+    {
+      "id": 20304,
+      "category_id": 203,
+      "name": "Нетворкинг",
+      "is_potential": true
+    },
+    {
+      "id": 20305,
+      "category_id": 203,
+      "name": "Портфолио-проект",
+      "is_potential": true
+    },
+    {
+      "id": 20401,
+      "category_id": 204,
+      "name": "Работа над имиджем и стилем",
+      "is_potential": false
+    },
+    {
+      "id": 20402,
+      "category_id": 204,
+      "name": "Развитие коммуникативных навыков",
+      "is_potential": false
+    },
+    {
+      "id": 20403,
+      "category_id": 204,
+      "name": "Знакомства с девушками",
+      "is_potential": false
+    },
+    {
+      "id": 20404,
+      "category_id": 204,
+      "name": "Свидания",
+      "is_potential": false
+    },
+    {
+      "id": 20405,
+      "category_id": 204,
+      "name": "Онлайн-знакомства (приложения, сайты)",
+      "is_potential": false
+    },
+    {
+      "id": 20406,
+      "category_id": 204,
+      "name": "Планирование свиданий",
+      "is_potential": true
+    },
+    {
+      "id": 20407,
+      "category_id": 204,
+      "name": "Подготовка к встречам (темы, образ)",
+      "is_potential": true
+    },
+    {
+      "id": 20408,
+      "category_id": 204,
+      "name": "Расширение круга общения (мероприятия, хобби-группы)",
+      "is_potential": true
+    },
+    {
+      "id": 20501,
+      "category_id": 205,
+      "name": "Стратегическое планирование",
+      "is_potential": false
+    },
+    {
+      "id": 20502,
+      "category_id": 205,
+      "name": "Аудит текущих проектов",
+      "is_potential": true
+    },
+    {
+      "id": 20503,
+      "category_id": 205,
+      "name": "Корректировка KPI",
+      "is_potential": true
+    },
+    {
+      "id": 20504,
+      "category_id": 205,
+      "name": "Декомпозиция целей",
+      "is_potential": true
+    },
+    {
+      "id": 30101,
+      "category_id": 301,
+      "name": "Прогулка",
+      "is_potential": false
+    },
+    {
+      "id": 30102,
+      "category_id": 301,
+      "name": "Прогулка в лесу",
+      "is_potential": true
+    },
+    {
+      "id": 30103,
+      "category_id": 301,
+      "name": "Наблюдение за природой",
+      "is_potential": true
+    },
+    {
+      "id": 30201,
+      "category_id": 302,
+      "name": "Новые курсы",
+      "is_potential": false
+    },
+    {
+      "id": 30202,
+      "category_id": 302,
+      "name": "Актуализация курсов",
+      "is_potential": false
+    },
+    {
+      "id": 30301,
+      "category_id": 303,
+      "name": "Обучение",
+      "is_potential": false
+    },
+    {
+      "id": 30302,
+      "category_id": 303,
+      "name": "Чтение статей",
+      "is_potential": false
+    },
+    {
+      "id": 30303,
+      "category_id": 303,
+      "name": "Сертификация",
+      "is_potential": true
+    },
+    {
+      "id": 30401,
+      "category_id": 304,
+      "name": "Чтение",
+      "is_potential": false
+    },
+    {
+      "id": 30402,
+      "category_id": 304,
+      "name": "Просмотр хороших фильмов",
+      "is_potential": false
+    },
+    {
+      "id": 30403,
+      "category_id": 304,
+      "name": "Выставки, концерты",
+      "is_potential": false
+    },
+    {
+      "id": 30404,
+      "category_id": 304,
+      "name": "Документальное кино",
+      "is_potential": true
+    },
+    {
+      "id": 30405,
+      "category_id": 304,
+      "name": "Подкасты",
+      "is_potential": true
+    },
+    {
+      "id": 30501,
+      "category_id": 305,
+      "name": "Музлит-классика",
+      "is_potential": false
+    },
+    {
+      "id": 30502,
+      "category_id": 305,
+      "name": "Музлит-современная",
+      "is_potential": false
+    },
+    {
+      "id": 30601,
+      "category_id": 306,
+      "name": "Геймификация",
+      "is_potential": false
+    },
+    {
+      "id": 30701,
+      "category_id": 307,
+      "name": "Баня/сауна/хамам",
+      "is_potential": false
+    },
+    {
+      "id": 30702,
+      "category_id": 307,
+      "name": "Скипидарная ванна",
+      "is_potential": false
+    },
+    {
+      "id": 30703,
+      "category_id": 307,
+      "name": "Щелочная ванна",
+      "is_potential": false
+    },
+    {
+      "id": 30704,
+      "category_id": 307,
+      "name": "Джакузи",
+      "is_potential": false
+    },
+    {
+      "id": 30705,
+      "category_id": 307,
+      "name": "Ванна для ног",
+      "is_potential": false
+    },
+    {
+      "id": 40101,
+      "category_id": 401,
+      "name": "Ночной сон",
+      "is_potential": false
+    },
+    {
+      "id": 40102,
+      "category_id": 401,
+      "name": "Дневной отдых (20 мин)",
+      "is_potential": true
+    },
+    {
+      "id": 40103,
+      "category_id": 401,
+      "name": "Сиеста",
+      "is_potential": true
+    },
+    {
+      "id": 40201,
+      "category_id": 402,
+      "name": "Завтрак",
+      "is_potential": false
+    },
+    {
+      "id": 40202,
+      "category_id": 402,
+      "name": "Завтрак-2",
+      "is_potential": false
+    },
+    {
+      "id": 40203,
+      "category_id": 402,
+      "name": "Обед",
+      "is_potential": false
+    },
+    {
+      "id": 40204,
+      "category_id": 402,
+      "name": "Ужин",
+      "is_potential": false
+    },
+    {
+      "id": 40205,
+      "category_id": 402,
+      "name": "Ужин-2",
+      "is_potential": false
+    },
+    {
+      "id": 40206,
+      "category_id": 402,
+      "name": "Ланч",
+      "is_potential": true
+    },
+    {
+      "id": 40207,
+      "category_id": 402,
+      "name": "Осознанный перекус",
+      "is_potential": true
+    },
+    {
+      "id": 40301,
+      "category_id": 403,
+      "name": "Утренняя гигиена",
+      "is_potential": false
+    },
+    {
+      "id": 40302,
+      "category_id": 403,
+      "name": "Вечерняя гигиена",
+      "is_potential": false
+    },
+    {
+      "id": 40303,
+      "category_id": 403,
+      "name": "Душ",
+      "is_potential": false
+    },
+    {
+      "id": 40304,
+      "category_id": 403,
+      "name": "Чистка зубов",
+      "is_potential": false
+    },
+    {
+      "id": 40305,
+      "category_id": 403,
+      "name": "Бритьё",
+      "is_potential": false
+    },
+    {
+      "id": 40306,
+      "category_id": 403,
+      "name": "Гигиена-микс",
+      "is_potential": false
+    },
+    {
+      "id": 40401,
+      "category_id": 404,
+      "name": "Текущая работа",
+      "is_potential": false
+    },
+    {
+      "id": 40402,
+      "category_id": 404,
+      "name": "Проведение уроков",
+      "is_potential": false
+    },
+    {
+      "id": 40403,
+      "category_id": 404,
+      "name": "Подготовка материалов",
+      "is_potential": false
+    },
+    {
+      "id": 40404,
+      "category_id": 404,
+      "name": "Проверка заданий",
+      "is_potential": false
+    },
+    {
+      "id": 40405,
+      "category_id": 404,
+      "name": "Методическая работа",
+      "is_potential": false
+    },
+    {
+      "id": 40406,
+      "category_id": 404,
+      "name": "Методические совещания",
+      "is_potential": true
+    },
+    {
+      "id": 40407,
+      "category_id": 404,
+      "name": "Аттестация",
+      "is_potential": true
+    },
+    {
+      "id": 40501,
+      "category_id": 405,
+      "name": "Логистика в бассейн",
+      "is_potential": false
+    },
+    {
+      "id": 50101,
+      "category_id": 501,
+      "name": "Приготовление еды",
+      "is_potential": false
+    },
+    {
+      "id": 50102,
+      "category_id": 501,
+      "name": "Мытьё посуды",
+      "is_potential": false
+    },
+    {
+      "id": 50103,
+      "category_id": 501,
+      "name": "Пылесос",
+      "is_potential": false
+    },
+    {
+      "id": 50104,
+      "category_id": 501,
+      "name": "Мытьё полов",
+      "is_potential": false
+    },
+    {
+      "id": 50105,
+      "category_id": 501,
+      "name": "Протирка пыли",
+      "is_potential": false
+    },
+    {
+      "id": 50106,
+      "category_id": 501,
+      "name": "Стирка",
+      "is_potential": false
+    },
+    {
+      "id": 50107,
+      "category_id": 501,
+      "name": "Глажка",
+      "is_potential": false
+    },
+    {
+      "id": 50108,
+      "category_id": 501,
+      "name": "Наведение порядка",
+      "is_potential": false
+    },
+    {
+      "id": 50109,
+      "category_id": 501,
+      "name": "Смена постельного белья",
+      "is_potential": false
+    },
+    {
+      "id": 50110,
+      "category_id": 501,
+      "name": "Сбор сумки в бассейн",
+      "is_potential": false
+    },
+    {
+      "id": 50111,
+      "category_id": 501,
+      "name": "Быт-микс",
+      "description": "Тип для активностей, когда я в одном блоке выполняю несколько разных бытовых задач, для которых не хочу создавать отдельные блоки."
+    },
+    {
+      "id": 50201,
+      "category_id": 502,
+      "name": "Покупка продуктов",
+      "is_potential": false
+    },
+    {
+      "id": 50301,
+      "category_id": 503,
+      "name": "Мытьё окон",
+      "is_potential": false
+    },
+    {
+      "id": 50302,
+      "category_id": 503,
+      "name": "Чистка фильтров",
+      "is_potential": false
+    },
+    {
+      "id": 50401,
+      "category_id": 504,
+      "name": "Дорога",
+      "is_potential": false
+    },
+    {
+      "id": 60101,
+      "category_id": 601,
+      "name": "Цифровые паразиты",
+      "is_potential": false
+    },
+    {
+      "id": 60201,
+      "category_id": 602,
+      "name": "Сидел-тупил",
+      "is_potential": false
+    },
+    {
+      "id": 60202,
+      "category_id": 602,
+      "name": "Лежал-мечтал",
+      "is_potential": false
+    },
+    {
+      "id": 60203,
+      "category_id": 602,
+      "name": "Руминация",
+      "is_potential": false
+    },
+    {
+      "id": 60204,
+      "category_id": 602,
+      "name": "Не мог заснуть",
+      "is_potential": false
+    },
+    {
+      "id": 70101,
+      "category_id": 701,
+      "name": "Обжорство",
+      "is_potential": false
+    },
+    {
+      "id": 70102,
+      "category_id": 701,
+      "name": "Ночной жор",
+      "is_potential": true
+    },
+    {
+      "id": 70103,
+      "category_id": 701,
+      "name": "Эмоциональное заедание",
+      "is_potential": true
+    }
+  ]
+}
