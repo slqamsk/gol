@@ -1,0 +1,154 @@
+/* daily-tracker.css – специфичные стили для страницы трекера */
+
+.tracker-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.date-controls {
+    display: flex;
+    gap: 10px;
+}
+
+.current-date {
+    font-size: 1.2rem;
+    font-weight: bold;
+    background: #e9ecef;
+    padding: 4px 12px;
+    border-radius: 20px;
+}
+
+.tracker-main {
+    display: flex;
+    gap: 30px;
+    margin-top: 20px;
+}
+
+.timeline-container {
+    position: relative;
+    flex: 1;
+    min-width: 600px;
+    overflow-x: auto;
+    border: 1px solid #ccc;
+    background: #fff;
+}
+
+.timeline {
+    position: relative;
+    width: 80px;
+    background: #f8f9fa;
+    border-right: 1px solid #ccc;
+    float: left;
+    height: 1440px; /* 1440px = 24 часа * 60 минут */
+}
+
+.timeline-hour {
+    position: absolute;
+    width: 100%;
+    border-bottom: 1px solid #ddd;
+    font-size: 10px;
+    text-align: right;
+    padding-right: 5px;
+    box-sizing: border-box;
+    color: #555;
+}
+.timeline-hour span {
+    position: absolute;
+    right: 5px;
+    top: -6px;
+    background: #f8f9fa;
+    padding: 0 2px;
+}
+
+.activities-container {
+    position: relative;
+    margin-left: 80px;
+    height: 1440px;
+    background: #fefefe;
+    overflow: visible;
+}
+
+.activity-block {
+    position: absolute;
+    left: 0;
+    width: 500px;
+    background: #e2e8f0;
+    border: 1px solid #333;
+    border-radius: 4px;
+    padding: 4px 6px;
+    font-size: 11px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: box-shadow 0.1s;
+    box-sizing: border-box;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+.activity-block:hover {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    z-index: 10;
+}
+.activity-block.done {
+    opacity: 0.6;
+    filter: grayscale(0.2);
+    text-decoration: line-through;
+}
+.activity-block.in-progress {
+    border: 2px dashed #eab308;
+}
+
+.legend {
+    width: 280px;
+    background: #fafafa;
+    border: 1px solid #ddd;
+    padding: 12px;
+    height: fit-content;
+}
+.legend h3 {
+    margin-top: 0;
+}
+.rank-item {
+    margin-bottom: 16px;
+}
+.rank-name {
+    font-weight: bold;
+    padding: 4px 8px;
+    border-radius: 4px;
+    margin-bottom: 6px;
+}
+.category-item {
+    margin-left: 16px;
+    margin-top: 4px;
+    padding: 2px 4px;
+    border-radius: 3px;
+    font-size: 12px;
+}
+.coeff {
+    font-size: 10px;
+    color: #555;
+    margin-left: 8px;
+}
+
+.date-list {
+    max-height: 300px;
+    overflow-y: auto;
+    margin: 15px 0;
+}
+.date-option {
+    margin: 8px 0;
+}
+.date-option label {
+    margin-left: 6px;
+    cursor: pointer;
+}
+
+.modal-buttons {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+    margin-top: 15px;
+}
