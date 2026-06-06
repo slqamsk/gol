@@ -1,154 +1,335 @@
-/* daily-tracker.css – специфичные стили для страницы трекера */
+/* daily-tracker.css — только для страницы просмотра расписаний */
+/* (не конфликтует с main.css) */
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    background: #f8fafc;
+    font-family: 'Inter', sans-serif;
+    color: #0f172a;
+    overflow: auto;
+}
+
+.tracker-container {
+    max-width: 2560px;
+    margin: 0 auto;
+    background: #ffffff;
+    min-height: 100vh;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+}
 
 .tracker-header {
     display: flex;
-    align-items: baseline;
+    align-items: center;
     justify-content: space-between;
+    padding: 16px 24px;
+    border-bottom: 1px solid #e2e8f0;
+    background: #ffffff;
+    position: sticky;
+    top: 0;
+    z-index: 100;
     flex-wrap: wrap;
-    gap: 15px;
-    margin-bottom: 20px;
+    gap: 12px;
+}
+
+.brand {
+    font-weight: 700;
+    font-size: 1.3rem;
+    color: #0f172a;
 }
 
 .date-controls {
     display: flex;
-    gap: 10px;
+    gap: 12px;
+}
+
+.btn {
+    padding: 6px 14px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    background: #ffffff;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: #1e293b;
+}
+.btn:hover {
+    background: #f1f5f9;
+    border-color: #94a3b8;
+}
+.btn-primary {
+    background: #3b82f6;
+    border-color: #3b82f6;
+    color: white;
+}
+.btn-primary:hover {
+    background: #2563eb;
 }
 
 .current-date {
-    font-size: 1.2rem;
-    font-weight: bold;
-    background: #e9ecef;
-    padding: 4px 12px;
-    border-radius: 20px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    background: #eef2ff;
+    padding: 4px 14px;
+    border-radius: 30px;
+    color: #1e40af;
+}
+
+/* статус-бокс переопределяет общий класс .status из main.css — оставляем как есть */
+#status-box {
+    margin: 12px 24px 0;
 }
 
 .tracker-main {
     display: flex;
-    gap: 30px;
-    margin-top: 20px;
+    gap: 24px;
+    padding: 24px;
 }
 
-.timeline-container {
+#timeline-wrapper {
     position: relative;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    overflow: visible;
     flex: 1;
     min-width: 600px;
-    overflow-x: auto;
-    border: 1px solid #ccc;
-    background: #fff;
-}
-
-.timeline {
-    position: relative;
-    width: 80px;
-    background: #f8f9fa;
-    border-right: 1px solid #ccc;
-    float: left;
-    height: 1440px; /* 1440px = 24 часа * 60 минут */
-}
-
-.timeline-hour {
-    position: absolute;
-    width: 100%;
-    border-bottom: 1px solid #ddd;
-    font-size: 10px;
-    text-align: right;
-    padding-right: 5px;
-    box-sizing: border-box;
-    color: #555;
-}
-.timeline-hour span {
-    position: absolute;
-    right: 5px;
-    top: -6px;
-    background: #f8f9fa;
-    padding: 0 2px;
-}
-
-.activities-container {
-    position: relative;
-    margin-left: 80px;
     height: 1440px;
-    background: #fefefe;
-    overflow: visible;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+}
+
+.axis-line {
+    position: absolute;
+    left: 60px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: #94a3b8;
+    z-index: 5;
+}
+
+.tick {
+    position: absolute;
+    left: 60px;
+    height: 1px;
+    background: #e2e8f0;
+    transform: translateY(-50%);
+}
+.tick.major {
+    width: 8px;
+    background: #64748b;
+}
+.tick.minor {
+    width: 4px;
+    opacity: 0.4;
+}
+
+.time-label {
+    position: absolute;
+    left: 0;
+    width: 60px;
+    padding-right: 8px;
+    text-align: right;
+    font-size: 11px;
+    font-weight: 600;
+    color: #475569;
+    transform: translateY(-50%);
+}
+
+.current-time-line {
+    position: absolute;
+    left: 60px;
+    right: 0;
+    height: 2px;
+    background: #3b82f6;
+    z-index: 60;
+    pointer-events: none;
+    box-shadow: 0 0 4px rgba(59,130,246,0.6);
+    transition: top 0.5s linear;
+    display: none;
+}
+.current-time-marker {
+    position: absolute;
+    left: -10px;
+    top: -8px;
+    width: 0;
+    height: 0;
+    border-top: 8px solid transparent;
+    border-bottom: 8px solid transparent;
+    border-left: 10px solid #3b82f6;
+}
+.current-time-badge {
+    position: absolute;
+    left: -48px;
+    top: -16px;
+    background: #3b82f6;
+    color: white;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 4px;
+    white-space: nowrap;
+}
+
+#blocks-container {
+    position: absolute;
+    left: 80px;
+    top: 0;
+    right: 20px;
+    bottom: 0;
+    z-index: 10;
 }
 
 .activity-block {
     position: absolute;
-    left: 0;
-    width: 500px;
-    background: #e2e8f0;
-    border: 1px solid #333;
-    border-radius: 4px;
-    padding: 4px 6px;
-    font-size: 11px;
+    min-height: 4px;
+    border-radius: 6px;
+    cursor: default;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
     overflow: hidden;
-    cursor: pointer;
+    border: 1px solid rgba(0,0,0,0.08);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
     transition: box-shadow 0.1s;
-    box-sizing: border-box;
-    white-space: nowrap;
-    text-overflow: ellipsis;
+    width: 500px;
 }
 .activity-block:hover {
-    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-    z-index: 10;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }
-.activity-block.done {
+.activity-block.status-done {
     opacity: 0.6;
-    filter: grayscale(0.2);
-    text-decoration: line-through;
+    filter: grayscale(0.4);
 }
-.activity-block.in-progress {
-    border: 2px dashed #eab308;
+.activity-block.status-in_progress {
+    border: 2px dashed #f59e0b;
+}
+.activity-block.status-done::after {
+    content: '✓';
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(0,0,0,0.2);
+    font-size: 14px;
+    font-weight: bold;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
 }
 
-.legend {
+.block-content {
+    padding: 4px 10px;
+    display: flex;
+    align-items: center;
+    white-space: nowrap;
+    overflow: hidden;
+    font-size: 12px;
+    font-weight: 500;
+}
+.block-time {
+    margin-right: 6px;
+    font-weight: 600;
+}
+.block-delta {
+    margin-right: 6px;
+    background: rgba(0,0,0,0.12);
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-size: 10px;
+}
+.block-rank-tag {
+    margin-right: 6px;
+    font-size: 9px;
+    background: rgba(0,0,0,0.1);
+    padding: 1px 5px;
+    border-radius: 3px;
+}
+.block-name {
+    flex: 1;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+.block-comment {
+    font-size: 10px;
+    margin-top: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding-left: 10px;
+}
+
+.legend-scroll {
     width: 280px;
-    background: #fafafa;
-    border: 1px solid #ddd;
-    padding: 12px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 16px;
     height: fit-content;
 }
-.legend h3 {
-    margin-top: 0;
+.legend-rank {
+    margin-bottom: 14px;
 }
-.rank-item {
-    margin-bottom: 16px;
+.legend-rank:last-child {
+    margin-bottom: 0;
 }
-.rank-name {
-    font-weight: bold;
-    padding: 4px 8px;
-    border-radius: 4px;
-    margin-bottom: 6px;
-}
-.category-item {
-    margin-left: 16px;
-    margin-top: 4px;
-    padding: 2px 4px;
-    border-radius: 3px;
+.legend-rank-title {
     font-size: 12px;
+    font-weight: 700;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
-.coeff {
+.legend-rank-title .dot {
+    width: 14px;
+    height: 14px;
+    border-radius: 3px;
+    border: 1px solid rgba(0,0,0,0.1);
+}
+.legend-subcats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding-left: 22px;
+}
+.legend-sub {
+    display: flex;
+    align-items: center;
+    gap: 5px;
     font-size: 10px;
-    color: #555;
-    margin-left: 8px;
+    color: #475569;
+}
+.legend-sub .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
 }
 
 .date-list {
     max-height: 300px;
     overflow-y: auto;
-    margin: 15px 0;
+    margin: 16px 0;
 }
 .date-option {
     margin: 8px 0;
 }
 .date-option label {
-    margin-left: 6px;
+    margin-left: 8px;
     cursor: pointer;
 }
 
 .modal-buttons {
     display: flex;
-    gap: 12px;
     justify-content: flex-end;
-    margin-top: 15px;
+    gap: 12px;
+    margin-top: 16px;
 }
