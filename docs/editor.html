@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Редактор цветов рангов и категорий</title>
+  <link rel="stylesheet" href="main.css">
+  <link rel="stylesheet" href="editor.css">
+</head>
+<body>
+
+<div class="container">
+  <h2>🛠 Редактор цветов рангов и категорий</h2>
+  <textarea id="json-input" placeholder="Вставьте time-tracker-categories.json..."></textarea>
+  <br>
+  <button id="apply-btn" class="button">Применить</button>
+  <div id="status-box" class="status"></div>
+
+  <table class="main-table" id="result-table">
+    <thead><tr><th class="main-th">Ранги</th><th class="main-th">Категории</th></tr></thead>
+    <tbody id="table-body"></tbody>
+  </table>
+
+  <div id="modal-overlay" class="modal-overlay">
+    <div id="color-picker-modal" class="modal-content">
+      <button id="close-modal" class="button" style="background:#ef4444">Закрыть</button>
+      <h3>Выберите цвет (английское название сохранится в JSON)</h3>
+      <div id="palette-container"></div>
+    </div>
+  </div>
+</div>
+
+<script src="color-data.js"></script>
+<script src="editor.js"></script>
+</body>
+</html>

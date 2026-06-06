@@ -91,7 +91,7 @@ section {
     background: #1e4a6e;
 }
 
-/* Статусы (цветные метки) */
+/* Статусы (цветные метки для легенды) */
 .status {
     display: inline-block;
     padding: 2px 8px;
@@ -112,6 +112,17 @@ section {
     background: #c8e6c9;
     color: #1b5e20;
     text-decoration: line-through;
+}
+/* сообщения об успехе/ошибке (для редактора и др.) */
+.status.success {
+    background: #d1fae5;
+    color: #065f46;
+    display: block;
+}
+.status.error {
+    background: #fee2e2;
+    color: #991b1b;
+    display: block;
 }
 
 /* Список правил (галочки) */
@@ -171,6 +182,13 @@ th {
     align-items: center;
     justify-content: center;
     z-index: 1000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+}
+.modal-overlay.active {
+    opacity: 1;
+    pointer-events: auto;
 }
 .modal-content {
     background: white;
