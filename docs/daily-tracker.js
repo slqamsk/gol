@@ -1,16 +1,24 @@
+// Константы и глобальное состояние
 const CATEGORIES_KEY = 'time-tracker-categories';
 const SCHEDULES_KEY = 'time-tracker-schedules';
 
-let categoriesData = null;       // объект TimeTrackerData (ranks, categories, activity_types)
-let schedulesRoot = null;        // SchedulesRoot
-let currentDate = null;          // текущая выбранная дата YYYY-MM-DD
-let currentSchedule = null;      // ScheduleEntry или null
+let categoriesData = null;
+let schedulesRoot = null;
+let currentDate = null;
+let currentActivities = null; // массив активностей для текущего дня
+
+// Иерархическая структура для легенды
+let ranksHierarchy = [];
 
 // DOM элементы
 const statusBox = document.getElementById('status-box');
 const currentDateDisplay = document.getElementById('current-date-display');
-const activitiesContainer = document.getElementById('activities-container');
-const legendContainer = document.getElementById('legend-content');
+const blocksContainer = document.getElementById('blocks-container');
+const legendContainer = document.getElementById('legend');
+const ticksContainer = document.getElementById('ticks-container');
+const labelsContainer = document.getElementById('labels-container');
+const currentTimeLine = document.getElementById('current-time-line');
+const currentTimeBadge = document.getElementById('current-time-badge');
 const selectDayBtn = document.getElementById('select-day-btn');
 const todayBtn = document.getElementById('today-btn');
 const dateModal = document.getElementById('date-modal');
@@ -29,29 +37,89 @@ function clearStatus() {
     statusBox.style.display = 'none';
 }
 
-// Загрузка справочника
+function formatMinutesToTime(minutes) {
+    minutes = Math.max(0, Math.min(minutes, 1440));
+    const h = Math.floor(minutes / 60);
+    const m = minutes % 60;
+    return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
+}
+
+function timeStrToMinutes(timeStr) {
+    if (!timeStr) return 0;
+    const [h, m] = timeStr.split(':').map(Number);
+    return h * 60 + (m || 0);
+}
+
+function formatDuration(minutes) {
+    const total = Math.max(0, Math.round(minutes));
+    return `${Math.floor(total / 60).toString().padStart(2, '0')}:${(total % 60).toString().padStart(2, '0')}`;
+}
+
+function getContrastColor(hexOrName) {
+    const canvas = document.createElement('canvas');
+    canvas.width = 1;
+    canvas.height = 1;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = hexOrName;
+    ctx.fillRect(0, 0, 1, 1);
+    const [r, g, b] = ctx.getImageData(0, 0, 1, 1).data;
+    const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+    return luminance > 0.5 ? '#0f172a' : '#ffffff';
+}
+
+// Загрузка справочника и построение иерархии
 function loadCategories() {
     const stored = localStorage.getItem(CATEGORIES_KEY);
     if (!stored) {
-        showStatus('Ошибка: справочник активностей (time-tracker-categories) не найден в localStorage', true);
+        showStatus('Ошибка: справочник активностей не найден в localStorage', true);
         return false;
     }
     try {
         const parsed = JSON.parse(stored);
-        if (parsed && Array.isArray(parsed.ranks) && Array.isArray(parsed.categories) && Array.isArray(parsed.activity_types)) {
-            categoriesData = parsed;
-            return true;
-        } else {
-            showStatus('Ошибка: структура справочника не соответствует формату', true);
-            return false;
+        if (!parsed.ranks || !parsed.categories || !parsed.activity_types) {
+            throw new Error('Неверная структура справочника');
         }
-    } catch(e) {
-        showStatus(`Ошибка парсинга справочника: ${e.message}`, true);
+        categoriesData = parsed;
+        // Построение иерархии
+        const ranksMap = new Map();
+        for (const rank of categoriesData.ranks) {
+            ranksMap.set(rank.id, {
+                id: rank.id,
+                name: rank.name,
+                coefficient: rank.coefficient,
+                color: rank.color,
+                categories: []
+            });
+        }
+        for (const cat of categoriesData.categories) {
+            const rank = ranksMap.get(cat.rank_id);
+            if (rank) {
+                rank.categories.push({
+                    id: cat.id,
+                    name: cat.name,
+                    color: cat.color || rank.color,
+                    activities: []
+                });
+            }
+        }
+        for (const act of categoriesData.activity_types) {
+            for (const rank of ranksMap.values()) {
+                const category = rank.categories.find(c => c.id === act.category_id);
+                if (category) {
+                    category.activities.push(act.name);
+                    break;
+                }
+            }
+        }
+        ranksHierarchy = Array.from(ranksMap.values());
+        return true;
+    } catch (e) {
+        showStatus(`Ошибка загрузки справочника: ${e.message}`, true);
         return false;
     }
 }
 
-// Загрузка расписаний
+// Загрузка расписаний из localStorage
 function loadSchedules() {
     const stored = localStorage.getItem(SCHEDULES_KEY);
     if (!stored) {
@@ -64,135 +132,192 @@ function loadSchedules() {
         const parsed = JSON.parse(stored);
         if (parsed && typeof parsed.current_datetime === 'string' && Array.isArray(parsed.schedules)) {
             schedulesRoot = parsed;
-            // сортируем по датам
-            schedulesRoot.schedules.sort((a,b) => a.date.localeCompare(b.date));
+            schedulesRoot.schedules.sort((a, b) => a.date.localeCompare(b.date));
             return true;
         } else {
             showStatus('Ошибка: структура расписаний не соответствует формату', true);
             return false;
         }
-    } catch(e) {
+    } catch (e) {
         showStatus(`Ошибка парсинга расписаний: ${e.message}`, true);
         return false;
     }
 }
 
-// Получить цвет категории (наследование от ранга)
-function getCategoryColor(categoryId) {
-    const category = categoriesData.categories.find(c => c.id === categoryId);
-    if (!category) return '#cccccc';
-    if (category.color) return category.color;
-    const rank = categoriesData.ranks.find(r => r.id === category.rank_id);
-    return rank ? rank.color : '#cccccc';
+// Получить цвет для activityTypeId
+function getColorForActivityType(activityTypeId) {
+    const act = categoriesData.activity_types.find(a => a.id === activityTypeId);
+    if (!act) return '#cccccc';
+    const cat = categoriesData.categories.find(c => c.id === act.category_id);
+    if (!cat) return '#cccccc';
+    const rank = categoriesData.ranks.find(r => r.id === cat.rank_id);
+    const color = cat.color || (rank ? rank.color : '#cccccc');
+    return color;
 }
 
-// Получить название активности по activityTypeId
 function getActivityName(activityTypeId) {
     const act = categoriesData.activity_types.find(a => a.id === activityTypeId);
     return act ? act.name : `ID:${activityTypeId}`;
 }
 
-// Рендер легенды (ранги + категории)
+function getRankAndCategoryLabels(activityTypeId) {
+    const act = categoriesData.activity_types.find(a => a.id === activityTypeId);
+    if (!act) return { rankName: '', catName: '' };
+    const cat = categoriesData.categories.find(c => c.id === act.category_id);
+    if (!cat) return { rankName: '', catName: '' };
+    const rank = categoriesData.ranks.find(r => r.id === cat.rank_id);
+    return {
+        rankName: rank ? rank.name : '',
+        catName: cat.name
+    };
+}
+
+// Рендер легенды
 function renderLegend() {
-    if (!categoriesData) return;
     let html = '';
-    for (const rank of categoriesData.ranks) {
-        const rankColor = rank.color;
-        const categoriesForRank = categoriesData.categories.filter(c => c.rank_id === rank.id);
-        html += `<div class="rank-item">
-                    <div class="rank-name" style="background-color: ${rankColor}; color: #fff; padding: 4px 8px;">
-                        ${rank.id}. ${rank.name} <span class="coeff">(коэфф: ${rank.coefficient})</span>
-                    </div>`;
-        for (const cat of categoriesForRank) {
-            const catColor = cat.color || rankColor;
-            html += `<div class="category-item" style="background-color: ${catColor}; color: #000;">
-                        ${cat.id}. ${cat.name}
-                    </div>`;
+    for (const rank of ranksHierarchy) {
+        html += `<div class="legend-rank">
+                    <div class="legend-rank-title">
+                        <div class="dot" style="background: ${rank.color}"></div>
+                        <span>${rank.name} (×${rank.coefficient})</span>
+                    </div>
+                    <div class="legend-subcats">`;
+        for (const cat of rank.categories) {
+            html += `<div class="legend-sub">
+                        <div class="dot" style="background: ${cat.color}"></div>
+                        <span>${cat.name}</span>
+                     </div>`;
         }
-        html += `</div>`;
+        html += `</div></div>`;
     }
     legendContainer.innerHTML = html;
 }
 
-// Отрисовка активностей на шкале
+// Алгоритм расчёта колонок для непересекающегося расположения
+function calculateColumns(activities) {
+    const sorted = [...activities].sort((a, b) => a.start - b.start);
+    const ends = [];
+    sorted.forEach(act => {
+        const s = act.start;
+        const e = act.end;
+        let col = 0;
+        while (ends[col] && ends[col] > s) col++;
+        ends[col] = e;
+        act._col = col;
+    });
+    return sorted;
+}
+
+// Рендер блоков
 function renderActivities() {
-    activitiesContainer.innerHTML = '';
-    if (!currentSchedule || !currentSchedule.schedule || !currentSchedule.schedule.activities.length) {
-        return;
-    }
-    const activities = currentSchedule.schedule.activities;
-    // Сортировка по start для корректного z-index (опционально)
-    activities.sort((a,b) => a.start - b.start);
-    for (const act of activities) {
-        const top = act.start;          // пиксели от верха
-        const height = act.delta;
-        const bgColor = getCategoryColorForActivity(act.activityTypeId);
-        const activityName = getActivityName(act.activityTypeId);
+    blocksContainer.innerHTML = '';
+    if (!currentActivities || currentActivities.length === 0) return;
+
+    const acts = currentActivities.map(act => ({
+        ...act,
+        start: act.start,
+        end: act.end,
+        delta: act.delta,
+        status: act.status,
+        comment: act.comment,
+        activityTypeId: act.activityTypeId
+    }));
+    const sortedActs = calculateColumns(acts);
+    const blockWidth = 500;
+    const gap = 12;
+    const maxCol = Math.max(0, ...sortedActs.map(a => a._col || 0));
+    blocksContainer.style.width = `${(maxCol + 1) * (blockWidth + gap)}px`;
+
+    for (const act of sortedActs) {
+        const top = act.start;
+        const height = Math.max(4, act.delta);
+        const bgColor = getColorForActivityType(act.activityTypeId);
+        const textColor = getContrastColor(bgColor);
+        const name = getActivityName(act.activityTypeId);
+        const { rankName, catName } = getRankAndCategoryLabels(act.activityTypeId);
+        const tagContent = catName ? `${rankName} — ${catName}` : rankName;
         const startTime = formatMinutesToTime(act.start);
         const endTime = formatMinutesToTime(act.end);
-        const deltaHours = (act.delta / 60).toFixed(1);
-        let commentHtml = act.comment ? `<br><small>${act.comment}</small>` : '';
-        let statusClass = '';
-        if (act.status === 'done') statusClass = 'done';
-        if (act.status === 'in_progress') statusClass = 'in-progress';
-        
+        const commentHtml = act.comment ? `<div class="block-comment">💬 ${act.comment}</div>` : '';
+        const statusClass = `status-${act.status}`;
+
         const block = document.createElement('div');
         block.className = `activity-block ${statusClass}`;
-        block.style.top = `${top}px`;
-        block.style.height = `${height}px`;
-        block.style.backgroundColor = bgColor;
-        // контрастный текст (упрощённо)
-        block.style.color = getContrastColor(bgColor);
-        block.innerHTML = `<strong>${startTime}–${endTime} (${deltaHours}ч)</strong><br>${activityName}${commentHtml}`;
-        block.dataset.id = act.id;
-        // позже добавим обработчики двойного клика и перетаскивания (раздел 7)
-        activitiesContainer.appendChild(block);
+        block.style.cssText = `left: ${(act._col || 0) * (blockWidth + gap)}px; top: ${top}px; height: ${height}px; width: ${blockWidth}px; background-color: ${bgColor}; color: ${textColor};`;
+        block.innerHTML = `<div class="block-content">
+            <span class="block-time">${startTime} — ${endTime}</span>
+            <span class="block-delta">${formatDuration(act.delta)}</span>
+            <span class="block-rank-tag">${tagContent}</span>
+            <span class="block-name">${name}</span>
+        </div>${commentHtml}`;
+        blocksContainer.appendChild(block);
     }
 }
 
-// Вспомогательная: получить цвет категории для activityTypeId
-function getCategoryColorForActivity(activityTypeId) {
-    const act = categoriesData.activity_types.find(a => a.id === activityTypeId);
-    if (!act) return '#cccccc';
-    const cat = categoriesData.categories.find(c => c.id === act.category_id);
-    if (!cat) return '#cccccc';
-    return getCategoryColor(cat.id);
+// Отрисовка шкалы времени
+function renderTimelineTicks() {
+    ticksContainer.innerHTML = '';
+    labelsContainer.innerHTML = '';
+    for (let m = 0; m <= 1440; m += 5) {
+        const top = m; // 1 минута = 1px
+        const isHour = m % 60 === 0;
+        const tick = document.createElement('div');
+        tick.className = isHour ? 'tick major' : 'tick minor';
+        tick.style.top = `${top}px`;
+        ticksContainer.appendChild(tick);
+        if (isHour) {
+            const label = document.createElement('div');
+            label.className = 'time-label';
+            label.textContent = formatMinutesToTime(m);
+            label.style.top = `${top}px`;
+            labelsContainer.appendChild(label);
+        }
+    }
 }
 
-function formatMinutesToTime(minutes) {
-    const h = Math.floor(minutes / 60);
-    const m = minutes % 60;
-    return `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}`;
+// Обновление линии текущего времени (только для сегодня)
+function updateCurrentTimeLine() {
+    const today = new Date().toISOString().slice(0, 10);
+    if (currentDate !== today) {
+        currentTimeLine.style.display = 'none';
+        return;
+    }
+    const now = new Date();
+    const minutes = now.getHours() * 60 + now.getMinutes();
+    const top = minutes;
+    if (top >= 0 && top <= 1440) {
+        currentTimeLine.style.display = 'block';
+        currentTimeLine.style.top = `${top}px`;
+        currentTimeBadge.textContent = formatMinutesToTime(minutes);
+    } else {
+        currentTimeLine.style.display = 'none';
+    }
 }
 
-// Простейший контраст (чёрный/белый)
-function getContrastColor(hexColor) {
-    if (!hexColor) return '#000';
-    // если цвет передан в виде имени, преобразуем во что-то (упрощённо – вернём чёрный для светлых)
-    // для реальной реализации лучше использовать библиотеку, но для демо так
-    return '#000';
-}
-
-// Загрузить расписание для выбранной даты
+// Загрузка расписания для выбранной даты
 function loadScheduleForDate(date) {
     currentDate = date;
     currentDateDisplay.textContent = date;
     const entry = schedulesRoot.schedules.find(s => s.date === date);
-    if (entry) {
-        currentSchedule = entry;
+    if (entry && entry.schedule && Array.isArray(entry.schedule.activities)) {
+        currentActivities = entry.schedule.activities;
         renderActivities();
-        showStatus(`Загружено расписание на ${date}`);
+        showStatus(`Загружено расписание на ${date} (активностей: ${currentActivities.length})`);
     } else {
-        currentSchedule = null;
-        activitiesContainer.innerHTML = '';
+        currentActivities = [];
+        blocksContainer.innerHTML = '';
         showStatus(`Расписания на ${date} ещё нет`, false);
     }
+    updateCurrentTimeLine();
 }
 
-// Обновить список дат в модальном окне
+// --- Модальное окно выбора даты ---
 function updateDateListModal() {
-    if (!schedulesRoot) return;
-    const dates = schedulesRoot.schedules.map(s => s.date);
+    if (!schedulesRoot || !schedulesRoot.schedules) {
+        dateListDiv.innerHTML = '<p>Нет сохранённых расписаний</p>';
+        return;
+    }
+    const dates = schedulesRoot.schedules.map(s => s.date).sort();
     if (dates.length === 0) {
         dateListDiv.innerHTML = '<p>Нет сохранённых расписаний</p>';
         return;
@@ -207,7 +332,6 @@ function updateDateListModal() {
     dateListDiv.innerHTML = html;
 }
 
-// Открыть модальное окно выбора даты
 function openDateModal() {
     updateDateListModal();
     dateModal.classList.add('active');
@@ -217,7 +341,6 @@ function closeDateModal() {
     dateModal.classList.remove('active');
 }
 
-// Выбрать дату из модального окна
 function selectDateFromModal() {
     const selectedRadio = document.querySelector('input[name="selectedDate"]:checked');
     if (!selectedRadio) {
@@ -229,39 +352,34 @@ function selectDateFromModal() {
     loadScheduleForDate(date);
 }
 
-// Установить сегодняшнюю дату
 function setToday() {
-    const today = new Date().toISOString().slice(0,10);
-    currentDate = today;
-    currentDateDisplay.textContent = today;
-    const entry = schedulesRoot.schedules.find(s => s.date === today);
-    if (entry) {
-        currentSchedule = entry;
-        renderActivities();
-        showStatus(`Загружено расписание на сегодня (${today})`);
-    } else {
-        currentSchedule = null;
-        activitiesContainer.innerHTML = '';
-        showStatus(`Расписания за сегодня (${today}) ещё нет`, false);
-    }
+    const today = new Date().toISOString().slice(0, 10);
+    loadScheduleForDate(today);
 }
 
-// Инициализация
+// --- Инициализация ---
 function init() {
     if (!loadCategories()) return;
     if (!loadSchedules()) return;
     renderLegend();
-    // По умолчанию – сегодня
-    setToday();
-    // Обработчики
+    renderTimelineTicks();
+
+    const today = new Date().toISOString().slice(0, 10);
+    loadScheduleForDate(today);
+
+    // Обновление линии времени каждую минуту
+    setInterval(() => {
+        if (currentDate === new Date().toISOString().slice(0, 10)) {
+            updateCurrentTimeLine();
+        }
+    }, 60000);
+
+    // Обработчики событий
     selectDayBtn.onclick = openDateModal;
     todayBtn.onclick = setToday;
     modalSelectBtn.onclick = selectDateFromModal;
     modalCancelBtn.onclick = closeDateModal;
-    // Закрытие модалки по клику на фон
-    dateModal.onclick = (e) => {
-        if (e.target === dateModal) closeDateModal();
-    };
+    dateModal.onclick = (e) => { if (e.target === dateModal) closeDateModal(); };
 }
 
 init();

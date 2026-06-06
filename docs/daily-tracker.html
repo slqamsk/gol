@@ -2,17 +2,18 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>GOL - Дневной трекер</title>
+    <title>Daily Tracker — просмотр расписаний</title>
     <link rel="stylesheet" href="main.css">
     <link rel="stylesheet" href="daily-tracker.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
 </head>
 <body>
-<div class="container">
+<div class="tracker-container">
     <header class="tracker-header">
-        <h1>📅 Дневной трекер</h1>
+        <div class="brand">📅 Daily Tracker</div>
         <div class="date-controls">
-            <button id="select-day-btn" class="button">Выбрать день</button>
-            <button id="today-btn" class="button">Сегодня</button>
+            <button id="select-day-btn" class="btn">Выбрать день</button>
+            <button id="today-btn" class="btn btn-primary">Сегодня</button>
         </div>
         <div id="current-date-display" class="current-date"></div>
     </header>
@@ -20,14 +21,17 @@
     <div id="status-box" class="status"></div>
 
     <div class="tracker-main">
-        <div class="timeline-container">
-            <div id="timeline" class="timeline"></div>
-            <div id="activities-container" class="activities-container"></div>
+        <div id="timeline-wrapper">
+            <div class="axis-line"></div>
+            <div id="ticks-container"></div>
+            <div id="labels-container"></div>
+            <div id="current-time-line" class="current-time-line">
+                <div class="current-time-marker"></div>
+                <div class="current-time-badge" id="current-time-badge">00:00</div>
+            </div>
+            <div id="blocks-container"></div>
         </div>
-        <aside class="legend">
-            <h3>Легенда</h3>
-            <div id="legend-content"></div>
-        </aside>
+        <div class="legend-scroll" id="legend"></div>
     </div>
 </div>
 
@@ -37,8 +41,8 @@
         <h3>Выберите дату</h3>
         <div id="date-list" class="date-list"></div>
         <div class="modal-buttons">
-            <button id="modal-select-btn" class="button">Выбрать</button>
-            <button id="modal-cancel-btn" class="button secondary">Отмена</button>
+            <button id="modal-select-btn" class="btn btn-primary">Выбрать</button>
+            <button id="modal-cancel-btn" class="btn">Отмена</button>
         </div>
     </div>
 </div>
