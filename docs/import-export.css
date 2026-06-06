@@ -1,0 +1,68 @@
+/* import-export.css — стили только для страницы импорта/экспорта */
+
+/* Специфичные для этой страницы элементы */
+#status-box {
+    margin: 15px 0 10px 0;
+}
+
+#json-editor {
+    width: 100%;
+    max-width: 800px;
+    height: 400px;
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    resize: both;
+    background: #fafafa;
+    margin-bottom: 15px;
+}
+
+.button-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 25px;
+}
+
+.button.small {
+    padding: 4px 10px;
+    font-size: 12px;
+}
+
+.dates-panel {
+    border: 1px solid #ddd;
+    background: #fefefe;
+    padding: 10px;
+}
+
+.dates-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 10px;
+    font-weight: bold;
+}
+
+.dates-list {
+    max-height: 300px;
+    overflow-y: auto;
+    border-top: 1px solid #eee;
+    padding-top: 8px;
+}
+
+.date-item {
+    margin: 5px 0;
+}
+
+.date-item label {
+    margin-left: 6px;
+    cursor: pointer;
+}
+
+.modal-buttons {
+    margin-top: 20px;
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+}

@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Time Tracker – Импорт / экспорт расписаний</title>
+    <link rel="stylesheet" href="main.css">
+    <link rel="stylesheet" href="import-export.css">
+</head>
+<body>
+<div class="container">
+    <h1>📥 Импорт / экспорт расписаний</h1>
+    <div id="status-box" class="status"></div>
+
+    <textarea id="json-editor" placeholder="JSON расписания (ScheduleEntry или массив ScheduleEntry[])"></textarea>
+
+    <div class="button-group">
+        <button id="load-single" class="button">Загрузить одну дату</button>
+        <button id="load-multiple" class="button">Загрузить выбранные даты</button>
+        <button id="apply-single" class="button">Применить одну дату</button>
+        <button id="apply-multiple" class="button">Применить несколько дат</button>
+        <button id="clear-editor" class="button">Очистить редактор</button>
+        <button id="refresh-list" class="button">Обновить список дат</button>
+    </div>
+
+    <div class="dates-panel">
+        <div class="dates-header">
+            <span>📅 Список дат в хранилище</span>
+            <div class="dates-actions">
+                <button id="select-all" class="button small">Выбрать все</button>
+                <button id="deselect-all" class="button small">Сбросить все</button>
+                <button id="delete-selected" class="button small" style="background:#dc2626;">Удалить выбранные</button>
+            </div>
+        </div>
+        <div id="dates-list" class="dates-list">
+            <!-- чекбоксы с датами будут добавлены динамически -->
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно для подтверждения -->
+<div id="confirm-modal" class="modal-overlay">
+    <div class="modal-content">
+        <p id="confirm-message"></p>
+        <div class="modal-buttons">
+            <button id="confirm-yes" class="button">Да, перезаписать</button>
+            <button id="confirm-no" class="button secondary">Отмена</button>
+        </div>
+    </div>
+</div>
+
+<script src="import-export.js"></script>
+</body>
+</html>
