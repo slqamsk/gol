@@ -93,12 +93,6 @@ export interface ActivityType {
   name: string;
   /** Подробное описание типа активности */
   description?: string;
-  /**
-   * Флаг типа активности:
-   * `false`: основная активность
-   * `true`: потенциальная активность
-   */
-  is_potential?: boolean;
 }
 
 /**
