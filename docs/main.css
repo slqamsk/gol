@@ -1,241 +1,172 @@
-/* main.css - общие стили для всех страниц Time Tracker */
+/* main.css - общие стили для всех страниц Time Tracker (фиксированная ширина, без адаптивности) */
 
+/* Сброс отступов, чтобы полосы прокрутки работали корректно */
 * {
-    box-sizing: border-box;
     margin: 0;
     padding: 0;
+    box-sizing: border-box;
 }
 
+/* Тело страницы: полосы прокрутки при необходимости, фон, базовый шрифт */
 body {
-    font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
-    background: #f5f7fa;
-    color: #1e293b;
-    line-height: 1.5;
-    overflow-x: auto;
-    overflow-y: auto;
-    padding: 2rem 1rem;
+    font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+    background: #f0f2f5;
+    overflow: auto;          /* появление полос прокрутки при нехватке места */
+    padding: 20px;
 }
 
+/* Контейнер: фиксированная ширина, выравнивание по центру, белый фон */
 .container {
-    max-width: 1400px;
+    width: 1200px;          /* фиксированная ширина, без адаптивности */
     margin: 0 auto;
     background: white;
-    border-radius: 1.5rem;
-    box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05), 0 8px 10px -6px rgba(0,0,0,0.02);
-    padding: 2rem;
+    padding: 20px;
+    border: 1px solid #ccc;
 }
 
 /* Заголовки */
 h1 {
-    font-size: 2.5rem;
-    font-weight: 700;
-    background: linear-gradient(135deg, #2c3e66, #4a6fa5);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-    letter-spacing: -0.02em;
+    font-size: 28px;
+    margin-bottom: 8px;
 }
-
 h2 {
-    font-size: 1.8rem;
-    margin: 1.5rem 0 1rem 0;
-    border-left: 5px solid #4a6fa5;
-    padding-left: 1rem;
-    color: #0f172a;
+    font-size: 22px;
+    margin: 20px 0 12px 0;
+    border-left: 4px solid #2c6e9e;
+    padding-left: 12px;
 }
-
 h3 {
-    font-size: 1.3rem;
-    margin-bottom: 0.5rem;
+    font-size: 18px;
+    margin-bottom: 10px;
 }
-
 .subtitle {
-    font-size: 1.1rem;
-    color: #475569;
-    margin-top: 0.25rem;
-    margin-bottom: 1.5rem;
+    color: #555;
+    margin-bottom: 20px;
 }
 
 /* Секции */
 section {
-    margin-bottom: 2.5rem;
+    margin-bottom: 30px;
 }
 
+/* Блок формулы */
 .formula {
-    background: #eef2ff;
-    padding: 1rem;
-    border-radius: 1rem;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 1rem;
+    background: #eef2f7;
+    padding: 12px;
+    font-family: monospace;
     text-align: center;
-    margin: 1rem 0;
-    border: 1px solid #cbd5e1;
+    margin: 15px 0;
+    border: 1px solid #ccc;
 }
 
-/* Карточки для навигации */
+/* Карточки для навигации (фиксированная ширина, без flex-wrap) */
 .cards {
     display: flex;
-    flex-wrap: wrap;
-    gap: 1.5rem;
-    margin-top: 1rem;
+    gap: 20px;
+    margin-top: 10px;
+    flex-wrap: nowrap;      /* запрещаем перенос карточек */
+    overflow-x: auto;       /* если не помещаются, появляется горизонтальная прокрутка у блока */
 }
-
 .card {
-    flex: 1 1 280px;
-    background: #ffffff;
-    border-radius: 1rem;
-    padding: 1.5rem;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    border: 1px solid #e2e8f0;
-    transition: transform 0.1s ease, box-shadow 0.2s ease;
+    width: 280px;           /* фиксированная ширина каждой карточки */
+    background: #fafafa;
+    border: 1px solid #ddd;
+    padding: 15px;
 }
-
-.card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 10px 20px -5px rgba(0,0,0,0.1);
-}
-
-.card h3 {
-    margin-top: 0;
-}
-
 .card p {
-    color: #334155;
-    margin-bottom: 1.2rem;
-    font-size: 0.95rem;
+    margin-bottom: 12px;
+    font-size: 14px;
 }
-
 .button {
     display: inline-block;
-    background: #4a6fa5;
+    background: #2c6e9e;
     color: white;
     text-decoration: none;
-    padding: 0.5rem 1.2rem;
-    border-radius: 2rem;
-    font-weight: 500;
-    transition: background 0.2s;
+    padding: 6px 14px;
     border: none;
     cursor: pointer;
-    font-size: 0.9rem;
+    font-size: 14px;
 }
-
 .button:hover {
-    background: #2c3e66;
+    background: #1e4a6e;
 }
 
-.button.secondary {
-    background: #475569;
-}
-
-.button.secondary:hover {
-    background: #1e293b;
-}
-
-.button.disabled {
-    background: #cbd5e1;
-    cursor: not-allowed;
-    opacity: 0.7;
-}
-
-small {
-    display: block;
-    margin-top: 0.75rem;
-    color: #64748b;
-    font-size: 0.75rem;
-}
-
-/* Статусы (для легенды) */
+/* Статусы (цветные метки) */
 .status {
     display: inline-block;
-    padding: 0.2rem 0.5rem;
-    border-radius: 1rem;
-    font-size: 0.75rem;
-    font-weight: 500;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: bold;
 }
 .status.planned {
-    background: #e2e8f0;
-    color: #1e293b;
+    background: #e0e0e0;
+    color: #333;
 }
 .status.in-progress {
-    background: #fef9c3;
-    color: #854d0e;
-    border: 1px dashed #eab308;
+    background: #fff0b5;
+    color: #664d00;
+    border: 1px dashed #cc9900;
 }
 .status.done {
-    background: #bbf7d0;
-    color: #166534;
+    background: #c8e6c9;
+    color: #1b5e20;
     text-decoration: line-through;
-    opacity: 0.8;
 }
 
-/* Список правил */
+/* Список правил (галочки) */
 .rules ul {
-    list-style-type: none;
+    list-style: none;
     padding-left: 0;
 }
 .rules li {
-    margin-bottom: 0.75rem;
-    padding-left: 1.5rem;
+    margin-bottom: 8px;
+    padding-left: 20px;
     position: relative;
 }
 .rules li::before {
     content: "✓";
-    color: #2c6e2f;
-    font-weight: bold;
     position: absolute;
     left: 0;
+    color: #2c6e2f;
+    font-weight: bold;
 }
 
 /* Footer */
 footer {
-    margin-top: 3rem;
+    margin-top: 30px;
     text-align: center;
-    font-size: 0.85rem;
-    color: #64748b;
-    border-top: 1px solid #e2e8f0;
-    padding-top: 1.5rem;
+    font-size: 12px;
+    color: #666;
+    border-top: 1px solid #ddd;
+    padding-top: 15px;
 }
 
-/* Адаптивность (минимальная, только чтобы не ломалось на узких экранах) */
-@media (max-width: 800px) {
-    .container {
-        padding: 1rem;
-    }
-    h1 {
-        font-size: 1.8rem;
-    }
-    .cards {
-        flex-direction: column;
-    }
-}
-
-/* Стили для таблиц (общие для редактора и других страниц) */
+/* --- Стили для таблиц (используются в редакторе, архиве, трекере) --- */
 table {
-    margin: 1rem auto;
+    margin: 20px auto;
     border-collapse: collapse;
     background: white;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
 }
 th, td {
     border: 1px solid black;
-    padding: 12px 16px;
+    padding: 8px 12px;
     vertical-align: top;
-    min-width: 300px;
+    min-width: 250px;
 }
 th {
-    background: #f1f5f9;
-    font-weight: 600;
+    background: #e9ecef;
     text-align: center;
 }
 
-/* Модальное окно (общий каркас) */
+/* --- Модальное окно (общий каркас) --- */
 .modal-overlay {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0,0,0,0.5);
+    background: rgba(0,0,0,0.6);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -243,10 +174,9 @@ th {
 }
 .modal-content {
     background: white;
-    border-radius: 1rem;
-    max-width: 90vw;
-    max-height: 85vh;
+    border: 2px solid #333;
+    padding: 20px;
+    max-width: 90%;
+    max-height: 80%;
     overflow: auto;
-    padding: 1.5rem;
-    box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2);
 }

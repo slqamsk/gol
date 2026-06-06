@@ -2,7 +2,6 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>GOL - Геймификация жизни | Time Tracker</title>
     <link rel="stylesheet" href="main.css">
 </head>
@@ -13,30 +12,27 @@
             <p class="subtitle">Система учёта времени и геймификации жизненных активностей</p>
         </header>
 
-
-
         <section class="navigation">
             <div class="cards">
                 <div class="card">
                     <h3>Редактор справочника</h3>
                     <p>Просмотр и изменение цветов рангов и категорий. Загрузка/сохранение JSON вручную.</p>
-                    <a href="time-tracker-categories-editor.html" class="button">Открыть редактор</a>
+                    <a href="editor.html" target="_blank" class="button">Открыть редактор</a>
                 </div>
                 <div class="card">
                     <h3>Загрузка / выгрузка расписаний</h3>
-                    <p>Встроенный JSON-редактор в трекере позволяет экспортировать/импортировать расписание текущего дня. Для полной архивации скопируйте содержимое <code>localStorage</code> или используйте кнопки в трекере.</p>
-                    <a href="time-tracker.html#json-editor" class="button secondary">Перейти к JSON-редактору</a>
-                </div>                
-                <div class="card">
-                    <h3>Основной трекер</h3>
-                    <p>Планирование дня, визуальная временная шкала, перетаскивание блоков, редактирование активностей.</p>
-                    <a href="time-tracker.html" class="button">Открыть трекер</a>
+                    <p>Экспорт и импорт всех расписаний в JSON-файл.</p>
+                    <a href="import-export.html" target="_blank" class="button">Перейти к импорту/экспорту</a>
                 </div>
                 <div class="card">
                     <h3>Архивация расписаний</h3>
-                    <p>Все расписания постоянно хранятся в <code>localStorage</code>. Для создания резервной копии откройте инструменты разработчика (F12) → Application → Local Storage → скопируйте ключ <code>time-tracker-schedules</code>.</p>
-                    <button class="button disabled" disabled>В разработке</button>
-                    <small>Прямая страница архивации планируется в будущем.</small>
+                    <p>Просмотр всех сохранённых дней, удаление и создание полной резервной копии.</p>
+                    <a href="archive.html" target="_blank" class="button">Открыть архив</a>
+                </div>
+                <div class="card">
+                    <h3>Основной трекер</h3>
+                    <p>Планирование дня, визуальная временная шкала, перетаскивание блоков, редактирование активностей.</p>
+                    <a href="tracker.html" target="_blank" class="button">Открыть трекер</a>
                 </div>
             </div>
         </section>
@@ -55,7 +51,7 @@
                 <li><strong>Статусы</strong>: <span class="status planned">planned</span> (запланировано), <span class="status in-progress">in_progress</span> (в процессе), <span class="status done">done</span> (выполнено).</li>
                 <li><strong>Перерывы</strong> делятся на <em>прерывательные</em> (переключение на другую активность) и <em>неопределённые</em> (отвлечения без чёткой привязки).</li>
                 <li><strong>Цвета</strong>: каждый ранг имеет свой цвет; категория может наследовать цвет ранга или иметь собственный.</li>
-                <li><strong>Сохранение</strong> — все данные автоматически хранятся в <code>localStorage</code> браузера. Вы всегда можете сделать резервную копию через инструменты разработчика или использовать JSON-редактор в трекере.</li>
+                <li><strong>Сохранение</strong> — все данные автоматически хранятся в <code>localStorage</code> браузера. Вы всегда можете сделать резервную копию через инструменты разработчика или использовать страницы импорта/экспорта.</li>
             </ul>
         </section>
 
