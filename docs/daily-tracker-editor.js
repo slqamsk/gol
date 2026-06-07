@@ -59,12 +59,55 @@ function onCategoryChange() {
     }
 }
 
+// Получить rankId и categoryId по activityTypeId
+function getRankAndCategoryIdByActivityTypeId(activityTypeId) {
+    const act = categoriesData.activity_types.find(a => a.id === activityTypeId);
+    if (!act) return { rankId: null, categoryId: null };
+    const cat = categoriesData.categories.find(c => c.id === act.category_id);
+    if (!cat) return { rankId: null, categoryId: null };
+    const rank = categoriesData.ranks.find(r => r.id === cat.rank_id);
+    return { rankId: rank ? rank.id : null, categoryId: cat.id };
+}
+
 function loadActivityIntoForm(activity) {
-    actRank.value = activity.rankId || 1;
-    onRankChange();
-    actCategory.value = activity.categoryId || categoriesData.categories[0].id;
-    onCategoryChange();
-    actAction.value = activity.activityTypeId || categoriesData.activity_types[0].id;
+    // Получаем rankId и categoryId из activityTypeId
+    const { rankId, categoryId } = getRankAndCategoryIdByActivityTypeId(activity.activityTypeId);
+    
+    // Устанавливаем ранг
+    if (rankId !== null) {
+        // Убедимся, что опция существует
+        const optionExists = Array.from(actRank.options).some(opt => parseInt(opt.value) === rankId);
+        if (optionExists) {
+            actRank.value = rankId;
+        } else {
+            actRank.value = actRank.options[0].value;
+        }
+    } else {
+        actRank.value = actRank.options[0].value;
+    }
+    onRankChange(); // обновить категории
+    
+    // Устанавливаем категорию
+    if (categoryId !== null) {
+        const categoryExists = Array.from(actCategory.options).some(opt => parseInt(opt.value) === categoryId);
+        if (categoryExists) {
+            actCategory.value = categoryId;
+        } else {
+            actCategory.value = actCategory.options[0].value;
+        }
+    } else {
+        actCategory.value = actCategory.options[0].value;
+    }
+    onCategoryChange(); // обновить активности
+    
+    // Устанавливаем активность
+    const activityExists = Array.from(actAction.options).some(opt => parseInt(opt.value) === activity.activityTypeId);
+    if (activityExists) {
+        actAction.value = activity.activityTypeId;
+    } else {
+        actAction.value = actAction.options[0].value;
+    }
+    
     actComment.value = activity.comment || '';
     actDelta.value = activity.delta || 0;
     actActive.value = activity.active || 0;
@@ -203,6 +246,9 @@ function openEditModal(activity) {
     currentEditingId = activity.id;
     activityModalTitle.textContent = 'Редактирование активности';
     actDelete.style.display = 'block';
+    // Сначала построить селекты (ранги, категории, активности)
+    buildRanksSelect();
+    // Затем загрузить значения активности
     loadActivityIntoForm(activity);
     activityModal.classList.add('active');
 }
