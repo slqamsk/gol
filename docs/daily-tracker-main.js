@@ -6,6 +6,7 @@ function init() {
     if (!loadSchedules()) return;
     renderLegend();
     renderTimelineTicks();
+    initEditor();
 
     const today = new Date().toISOString().slice(0, 10);
     loadScheduleForDate(today);

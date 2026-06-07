@@ -12,6 +12,9 @@ let currentDate = null;
 let currentActivities = null;
 let ranksHierarchy = [];
 
+// Состояние для редактора активностей
+let currentEditingId = null;
+
 // Вспомогательные функции
 function showStatus(msg, isError = false) {
     const statusBox = document.getElementById('status-box');

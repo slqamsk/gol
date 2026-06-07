@@ -78,6 +78,10 @@ function renderActivities() {
             <span class="block-rank-tag">${tagContent}</span>
             <span class="block-name">${name}</span>
         </div>${commentHtml}`;
+        block.dataset.id = act.id;
+        block.ondblclick = () => {
+            if (window.openEditModal) openEditModal(act);
+        };
         blocksContainer.appendChild(block);
     }
 }

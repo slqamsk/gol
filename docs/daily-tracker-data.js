@@ -102,3 +102,15 @@ function getRankAndCategoryLabels(activityTypeId) {
         catName: cat.name
     };
 }
+
+function getNextIdForDay() {
+    const activities = currentActivities || [];
+    return activities.length ? Math.max(...activities.map(a => a.id)) + 1 : 1;
+}
+
+function saveToLocalStorage() {
+    if (schedulesRoot) {
+        schedulesRoot.current_datetime = new Date().toISOString();
+        localStorage.setItem(SCHEDULES_KEY, JSON.stringify(schedulesRoot));
+    }
+}

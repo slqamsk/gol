@@ -14,6 +14,7 @@
         <div class="date-controls">
             <button id="select-day-btn" class="btn">Выбрать день</button>
             <button id="today-btn" class="btn btn-primary">Сегодня</button>
+            <button id="add-activity-btn" class="btn btn-primary">+ Добавить</button>
         </div>
         <div id="current-date-display" class="current-date"></div>
     </header>
@@ -47,10 +48,91 @@
     </div>
 </div>
 
+<!-- Модальное окно редактирования активности -->
+<div id="activity-modal" class="modal-overlay">
+    <div class="modal-content activity-modal-content">
+        <h2 id="activity-modal-title">Редактирование активности</h2>
+        <div class="form-group">
+            <label>Ранг</label>
+            <select id="act-rank"></select>
+        </div>
+        <div class="form-group">
+            <label>Категория</label>
+            <select id="act-category"></select>
+        </div>
+        <div class="form-group">
+            <label>Активность</label>
+            <select id="act-action"></select>
+        </div>
+        <div class="form-group">
+            <label>Комментарий</label>
+            <input type="text" id="act-comment" placeholder="Необязательно">
+        </div>
+        <div class="form-group">
+            <label>Статус</label>
+            <div class="status-group">
+                <button id="status-planned" class="status-btn active" data-status="planned">Запланировано</button>
+                <button id="status-in-progress" class="status-btn" data-status="in_progress">Выполняется</button>
+                <button id="status-done" class="status-btn" data-status="done">Сделано</button>
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label>Дельта (мин)</label>
+                <input type="number" id="act-delta" step="5" min="0" max="1440">
+            </div>
+            <div class="form-group">
+                <label>Активное время (мин)</label>
+                <input type="number" id="act-active" step="5" min="0" max="1440">
+            </div>
+            <div class="form-group">
+                <label>Перерывы из-за прерываний</label>
+                <input type="number" id="act-int-breaks" step="5" min="0" max="1440">
+            </div>
+            <div class="form-group">
+                <label>Перерывы из-за отвлечений</label>
+                <input type="number" id="act-dist-breaks" step="5" min="0" max="1440">
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label>Начало</label>
+                <div class="time-input-group">
+                    <input type="time" id="act-start">
+                    <button id="act-start-now" class="btn small">Начать</button>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Конец</label>
+                <div class="time-input-group">
+                    <input type="time" id="act-end">
+                    <button id="act-end-now" class="btn small">Сделано</button>
+                </div>
+            </div>
+        </div>
+        <div class="form-actions">
+            <button id="act-delete" class="btn btn-danger" style="display:none">Удалить</button>
+            <button id="act-cancel" class="btn">Отмена</button>
+            <button id="act-save" class="btn btn-primary">Сохранить</button>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно валидации -->
+<div id="validation-modal" class="modal-overlay">
+    <div class="modal-content">
+        <h3 id="validation-title"></h3>
+        <p id="validation-message"></p>
+        <div id="validation-options" class="validation-options"></div>
+        <button id="validation-cancel" class="btn">Отменить сохранение и вернуться к редактированию</button>
+    </div>
+</div>
+
 <script src="daily-tracker-core.js"></script>
 <script src="daily-tracker-data.js"></script>
 <script src="daily-tracker-render.js"></script>
 <script src="daily-tracker-date.js"></script>
+<script src="daily-tracker-editor.js"></script>
 <script src="daily-tracker-main.js"></script>
 </body>
 </html>
