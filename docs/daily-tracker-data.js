@@ -114,3 +114,29 @@ function saveToLocalStorage() {
         localStorage.setItem(SCHEDULES_KEY, JSON.stringify(schedulesRoot));
     }
 }
+
+// Обновить поле current_datetime для указанной даты
+function updateScheduleCurrentDateTime(date) {
+    const entry = schedulesRoot.schedules.find(s => s.date === date);
+    if (entry) {
+        entry.current_datetime = new Date().toISOString();
+        saveToLocalStorage();
+        return true;
+    }
+    return false;
+}
+
+// Создать новое расписание для даты (если отсутствует) с current_datetime
+function ensureScheduleExists(date) {
+    let entry = schedulesRoot.schedules.find(s => s.date === date);
+    if (!entry) {
+        entry = {
+            date: date,
+            current_datetime: new Date().toISOString(),
+            schedule: { activities: [] }
+        };
+        schedulesRoot.schedules.push(entry);
+        saveToLocalStorage();
+    }
+    return entry;
+}

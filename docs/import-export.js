@@ -13,7 +13,7 @@ const clearEditorBtn = document.getElementById('clear-editor');
 const refreshListBtn = document.getElementById('refresh-list');
 const selectAllBtn = document.getElementById('select-all');
 const deselectAllBtn = document.getElementById('deselect-all');
-const deleteSelectedBtn = document.getElementById('delete-selected'); // добавлено
+const deleteSelectedBtn = document.getElementById('delete-selected');
 const confirmModal = document.getElementById('confirm-modal');
 const confirmMessage = document.getElementById('confirm-message');
 const confirmYes = document.getElementById('confirm-yes');
@@ -32,7 +32,8 @@ function formatJSON(data) {
     return JSON.stringify(data, null, '\t');
 }
 
-// Валидация SchedulesRoot
+// Валидация SchedulesRoot (поле current_datetime в ScheduleEntry не обязано присутствовать при проверке,
+// оно будет добавлено при миграции)
 function isValidSchedulesRoot(data) {
     if (!data || typeof data !== 'object') return false;
     if (typeof data.current_datetime !== 'string') return false;
@@ -70,6 +71,17 @@ function loadFromLocalStorage() {
         const parsed = JSON.parse(stored);
         if (isValidSchedulesRoot(parsed)) {
             currentSchedulesRoot = parsed;
+            // Миграция: добавить current_datetime для всех ScheduleEntry, если отсутствует
+            let needsSave = false;
+            for (const entry of currentSchedulesRoot.schedules) {
+                if (!entry.current_datetime) {
+                    entry.current_datetime = new Date().toISOString();
+                    needsSave = true;
+                }
+            }
+            if (needsSave) {
+                saveToLocalStorage();
+            }
             sortSchedulesByDate();
             saveToLocalStorage(); // пересохраним отсортированными
             showStatus('Данные в localStorage корректны');
@@ -171,7 +183,7 @@ function loadMultipleDates() {
     showStatus(`Загружено расписаний: ${entries.length}`);
 }
 
-// Проверка, является ли объект ScheduleEntry
+// Проверка, является ли объект ScheduleEntry (поля date и schedule обязательны, current_datetime не требуется)
 function isScheduleEntry(obj) {
     return obj && typeof obj === 'object' && typeof obj.date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(obj.date)
         && obj.schedule && typeof obj.schedule === 'object' && Array.isArray(obj.schedule.activities);
@@ -202,6 +214,8 @@ async function applySingleDate() {
         return;
     }
     const date = parsed.date;
+    // Установить current_datetime на текущее время (игнорируем то, что пришло в JSON)
+    parsed.current_datetime = new Date().toISOString();
     const existingIndex = currentSchedulesRoot.schedules.findIndex(s => s.date === date);
     if (existingIndex !== -1) {
         // спрашиваем подтверждение
@@ -252,8 +266,9 @@ async function applyMultipleDates() {
         const confirmed = await showConfirm(msg);
         if (!confirmed) return;
     }
-    // выполняем перезапись и добавление
+    // выполняем перезапись и добавление, устанавливая current_datetime на текущее время
     for (const entry of parsed) {
+        entry.current_datetime = new Date().toISOString(); // игнорируем значение из JSON
         const idx = currentSchedulesRoot.schedules.findIndex(s => s.date === entry.date);
         if (idx !== -1) currentSchedulesRoot.schedules[idx] = entry;
         else currentSchedulesRoot.schedules.push(entry);

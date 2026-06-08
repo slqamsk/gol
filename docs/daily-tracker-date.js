@@ -13,8 +13,15 @@ const modalCancelBtn = document.getElementById('modal-cancel-btn');
 function loadScheduleForDate(date) {
     currentDate = date;
     currentDateDisplay.textContent = date;
-    const entry = schedulesRoot.schedules.find(s => s.date === date);
-    if (entry && entry.schedule && Array.isArray(entry.schedule.activities)) {
+    
+    // Убедиться, что расписание существует (создать пустое при необходимости)
+    const entry = ensureScheduleExists(date);
+    
+    // Обновить current_datetime при загрузке (чтении)
+    entry.current_datetime = new Date().toISOString();
+    saveToLocalStorage();
+    
+    if (entry.schedule && Array.isArray(entry.schedule.activities)) {
         currentActivities = entry.schedule.activities;
         renderActivities();
         showStatus(`Загружено расписание на ${date} (активностей: ${currentActivities.length})`);

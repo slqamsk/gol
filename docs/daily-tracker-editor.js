@@ -153,12 +153,9 @@ async function saveActivity() {
     const ok = await validateAndFix(draft);
     if (!ok) return;
 
-    // Найти или создать день
-    let dayEntry = schedulesRoot.schedules.find(s => s.date === currentDate);
-    if (!dayEntry) {
-        dayEntry = { date: currentDate, schedule: { activities: [], overlaps: [] } };
-        schedulesRoot.schedules.push(dayEntry);
-    }
+    // Найти или создать день (используем ensureScheduleExists из data.js)
+    let dayEntry = ensureScheduleExists(currentDate);
+    
     const activities = dayEntry.schedule.activities;
     if (currentEditingId) {
         const index = activities.findIndex(a => a.id === currentEditingId);
@@ -172,6 +169,10 @@ async function saveActivity() {
     }
     activities.sort((a,b) => a.start - b.start);
     currentActivities = activities;
+    
+    // Обновить current_datetime для этой даты
+    dayEntry.current_datetime = new Date().toISOString();
+    
     saveToLocalStorage();
     renderActivities();
     closeActivityModal();
@@ -185,6 +186,10 @@ function deleteActivity() {
     if (dayEntry) {
         dayEntry.schedule.activities = dayEntry.schedule.activities.filter(a => a.id !== currentEditingId);
         currentActivities = dayEntry.schedule.activities;
+        
+        // Обновить current_datetime для этой даты
+        dayEntry.current_datetime = new Date().toISOString();
+        
         saveToLocalStorage();
         renderActivities();
         closeActivityModal();
