@@ -57,3 +57,8 @@ function getContrastColor(hexOrName) {
     const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
     return luminance > 0.5 ? '#0f172a' : '#ffffff';
 }
+
+// Возвращает строку с текущим московским временем в формате "ДД.ММ.ГГГГ, ЧЧ:ММ:СС"
+function getCurrentDateTimeString() {
+    return new Date().toLocaleString('ru-RU', { timeZone: 'Europe/Moscow' });
+}
