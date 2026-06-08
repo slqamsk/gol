@@ -58,7 +58,12 @@ function getContrastColor(hexOrName) {
     return luminance > 0.5 ? '#0f172a' : '#ffffff';
 }
 
-// Возвращает строку с текущим московским временем в формате "ДД.ММ.ГГГГ, ЧЧ:ММ:СС"
+// Возвращает строку с текущим московским временем в формате ISO 8601 с часовым поясом +03:00
+// Пример: "2026-06-08T13:54:22+03:00"
 function getCurrentDateTimeString() {
-    return new Date().toLocaleString('ru-RU', { timeZone: 'Europe/Moscow' });
+    const now = new Date();
+    // Добавляем 3 часа (10800000 мс) для перехода из UTC в московское время
+    const mskTime = new Date(now.getTime() + 3 * 60 * 60 * 1000);
+    // toISOString возвращает UTC, но мы уже сдвинули время, и заменяем Z на +03:00
+    return mskTime.toISOString().replace('Z', '+03:00');
 }

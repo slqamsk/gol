@@ -55,7 +55,7 @@ function loadCategories() {
 function loadSchedules() {
     const stored = localStorage.getItem(SCHEDULES_KEY);
     if (!stored) {
-        schedulesRoot = { current_datetime: new Date().toISOString(), schedules: [] };
+        schedulesRoot = { current_datetime: getCurrentDateTimeString(), schedules: [] };
         localStorage.setItem(SCHEDULES_KEY, JSON.stringify(schedulesRoot));
         showStatus('Создан новый пустой объект расписаний');
         return true;
@@ -110,7 +110,7 @@ function getNextIdForDay() {
 
 function saveToLocalStorage() {
     if (schedulesRoot) {
-        schedulesRoot.current_datetime = new Date().toISOString();
+        schedulesRoot.current_datetime = getCurrentDateTimeString();
         localStorage.setItem(SCHEDULES_KEY, JSON.stringify(schedulesRoot));
     }
 }
@@ -119,7 +119,7 @@ function saveToLocalStorage() {
 function updateScheduleCurrentDateTime(date) {
     const entry = schedulesRoot.schedules.find(s => s.date === date);
     if (entry) {
-        entry.current_datetime = new Date().toISOString();
+        entry.current_datetime = getCurrentDateTimeString();
         saveToLocalStorage();
         return true;
     }
@@ -132,7 +132,7 @@ function ensureScheduleExists(date) {
     if (!entry) {
         entry = {
             date: date,
-            current_datetime: new Date().toISOString(),
+            current_datetime: getCurrentDateTimeString(),
             schedule: { activities: [] }
         };
         schedulesRoot.schedules.push(entry);

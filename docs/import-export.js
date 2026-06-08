@@ -55,10 +55,20 @@ function isValidSchedulesRoot(data) {
 // Загрузить данные из localStorage, проверить, отрисовать список
 function loadFromLocalStorage() {
     const stored = localStorage.getItem(STORAGE_KEY);
+
+///////////////
+    console.log('Raw stored:', stored);
+    console.log('Type:', typeof stored);
+    console.log('Length:', stored ? stored.length : 'null');
+    if (stored && stored.charCodeAt(0) === 0xFEFF) {
+        console.warn('BOM detected at start!');
+    }
+//////////////
+
     if (!stored) {
         // создать пустой объект
         currentSchedulesRoot = {
-            current_datetime: new Date().toISOString(),
+            current_datetime: getCurrentDateTimeString(),
             schedules: []
         };
         saveToLocalStorage();
@@ -75,7 +85,7 @@ function loadFromLocalStorage() {
             let needsSave = false;
             for (const entry of currentSchedulesRoot.schedules) {
                 if (!entry.current_datetime) {
-                    entry.current_datetime = new Date().toISOString();
+                    entry.current_datetime = getCurrentDateTimeString();
                     needsSave = true;
                 }
             }
@@ -94,6 +104,11 @@ function loadFromLocalStorage() {
             datesContainer.innerHTML = '<p style="color:red;">Некорректные данные – список дат недоступен</p>';
         }
     } catch (e) {
+
+////////////
+    console.error('Parse error details:', e);
+    console.error('Problematic string:', stored);
+////////////        
         // невалидный JSON
         currentSchedulesRoot = null;
         jsonEditor.value = stored || '';
@@ -110,7 +125,7 @@ function sortSchedulesByDate() {
 
 function saveToLocalStorage() {
     if (currentSchedulesRoot) {
-        currentSchedulesRoot.current_datetime = new Date().toISOString();
+        currentSchedulesRoot.current_datetime = getCurrentDateTimeString();
         localStorage.setItem(STORAGE_KEY, JSON.stringify(currentSchedulesRoot));
     }
 }
@@ -215,7 +230,7 @@ async function applySingleDate() {
     }
     const date = parsed.date;
     // Установить current_datetime на текущее время (игнорируем то, что пришло в JSON)
-    parsed.current_datetime = new Date().toISOString();
+    parsed.current_datetime = getCurrentDateTimeString();
     const existingIndex = currentSchedulesRoot.schedules.findIndex(s => s.date === date);
     if (existingIndex !== -1) {
         // спрашиваем подтверждение
@@ -268,7 +283,7 @@ async function applyMultipleDates() {
     }
     // выполняем перезапись и добавление, устанавливая current_datetime на текущее время
     for (const entry of parsed) {
-        entry.current_datetime = new Date().toISOString(); // игнорируем значение из JSON
+        entry.current_datetime = getCurrentDateTimeString(); // игнорируем значение из JSON
         const idx = currentSchedulesRoot.schedules.findIndex(s => s.date === entry.date);
         if (idx !== -1) currentSchedulesRoot.schedules[idx] = entry;
         else currentSchedulesRoot.schedules.push(entry);

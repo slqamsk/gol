@@ -8,12 +8,12 @@ function init() {
     renderTimelineTicks();
     initEditor();
 
-    const today = new Date().toISOString().slice(0, 10);
+    const today = getCurrentDateTimeString().slice(0, 10);
     loadScheduleForDate(today);
 
     // Обновление линии времени каждую минуту
     setInterval(() => {
-        if (currentDate === new Date().toISOString().slice(0, 10)) {
+        if (currentDate === getCurrentDateTimeString().slice(0, 10)) {
             updateCurrentTimeLine();
         }
     }, 60000);

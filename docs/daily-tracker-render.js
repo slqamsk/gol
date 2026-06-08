@@ -111,7 +111,7 @@ function renderTimelineTicks() {
 function updateCurrentTimeLine() {
     const currentTimeLine = document.getElementById('current-time-line');
     const currentTimeBadge = document.getElementById('current-time-badge');
-    const today = new Date().toISOString().slice(0, 10);
+    const today = getCurrentDateTimeString().slice(0, 10);
     if (currentDate !== today) {
         currentTimeLine.style.display = 'none';
         return;

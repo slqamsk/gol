@@ -18,7 +18,7 @@ function loadScheduleForDate(date) {
     const entry = ensureScheduleExists(date);
     
     // Обновить current_datetime при загрузке (чтении)
-    entry.current_datetime = new Date().toISOString();
+    entry.current_datetime = getCurrentDateTimeString();
     saveToLocalStorage();
     
     if (entry.schedule && Array.isArray(entry.schedule.activities)) {
@@ -74,7 +74,7 @@ function selectDateFromModal() {
 }
 
 function setToday() {
-    const today = new Date().toISOString().slice(0, 10);
+    const today = getCurrentDateTimeString().slice(0, 10);
     loadScheduleForDate(today);
 }
 

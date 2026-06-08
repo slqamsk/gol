@@ -171,7 +171,7 @@ async function saveActivity() {
     currentActivities = activities;
     
     // Обновить current_datetime для этой даты
-    dayEntry.current_datetime = new Date().toISOString();
+    dayEntry.current_datetime = getCurrentDateTimeString();
     
     saveToLocalStorage();
     renderActivities();
@@ -188,7 +188,7 @@ function deleteActivity() {
         currentActivities = dayEntry.schedule.activities;
         
         // Обновить current_datetime для этой даты
-        dayEntry.current_datetime = new Date().toISOString();
+        dayEntry.current_datetime = getCurrentDateTimeString();
         
         saveToLocalStorage();
         renderActivities();
