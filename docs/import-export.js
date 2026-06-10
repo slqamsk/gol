@@ -47,7 +47,7 @@ function isValidSchedulesRoot(data) {
     for (const entry of data.schedules) {
         // Обязательные поля для ScheduleEntry: date, current_datetime, schedule.activities
         if (!entry.date || typeof entry.date !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(entry.date)) return false;
-        if (typeof entry.current_datetime !== 'string') return false;   // <-- добавлено
+        if (typeof entry.current_datetime !== 'string') return false;
         if (!entry.schedule || typeof entry.schedule !== 'object') return false;
         if (!Array.isArray(entry.schedule.activities)) return false;
 
@@ -88,26 +88,6 @@ function loadFromLocalStorage() {
         const parsed = JSON.parse(stored);
         if (isValidSchedulesRoot(parsed)) {
             currentSchedulesRoot = parsed;
-
-            // ---- МИГРАЦИЯ 1: добавить current_datetime для всех ScheduleEntry, если отсутствует ----
-            // (хотя валидация теперь требует его наличия, но на случай старых данных, которые
-            // могли быть записаны до обновления валидации, всё равно добавляем)
-            let needsSave = false;
-            for (const entry of currentSchedulesRoot.schedules) {
-                if (!entry.current_datetime) {
-                    entry.current_datetime = getCurrentDateTimeString();
-                    needsSave = true;
-                }
-                // ---- МИГРАЦИЯ 2: удалить поле overlaps из schedule (если есть) ----
-                if (entry.schedule && entry.schedule.overlaps !== undefined) {
-                    delete entry.schedule.overlaps;
-                    needsSave = true;
-                }
-            }
-            if (needsSave) {
-                saveToLocalStorage();
-            }
-
             sortSchedulesByDate();
             saveToLocalStorage(); // пересохраним отсортированными
             showStatus('Данные в localStorage корректны');
@@ -235,8 +215,7 @@ function isScheduleEntryArray(arr) {
 }
 
 // ---- ПРИМЕНЕНИЕ ОДНОЙ ДАТЫ (ИМПОРТ) ----
-// Изменение: при импорте current_datetime всегда перезаписывается текущим временем,
-// а также в процессе миграции удаляется overlaps (если есть).
+// Изменение: при импорте current_datetime всегда перезаписывается текущим временем
 async function applySingleDate() {
     const text = jsonEditor.value.trim();
     if (!text) {
@@ -253,11 +232,6 @@ async function applySingleDate() {
     if (!isScheduleEntry(parsed)) {
         showStatus('Ошибка: содержимое редактора не соответствует формату ScheduleEntry', true);
         return;
-    }
-
-    // ---- МИГРАЦИЯ: удаляем overlaps из schedule (если есть) ----
-    if (parsed.schedule && parsed.schedule.overlaps !== undefined) {
-        delete parsed.schedule.overlaps;
     }
 
     const date = parsed.date;
@@ -298,13 +272,6 @@ async function applyMultipleDates() {
     if (!isScheduleEntryArray(parsed)) {
         showStatus('Ошибка: содержимое редактора не соответствует массиву ScheduleEntry[]', true);
         return;
-    }
-
-    // ---- МИГРАЦИЯ: удаляем overlaps из каждого schedule ----
-    for (const entry of parsed) {
-        if (entry.schedule && entry.schedule.overlaps !== undefined) {
-            delete entry.schedule.overlaps;
-        }
     }
 
     const existingDates = [];
