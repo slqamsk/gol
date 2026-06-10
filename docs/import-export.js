@@ -1,3 +1,6 @@
+// import-export.js
+// Страница для ручного импорта/экспорта расписаний в/из localStorage
+
 const STORAGE_KEY = 'time-tracker-schedules';
 let currentSchedulesRoot = null;
 
@@ -21,7 +24,8 @@ const confirmNo = document.getElementById('confirm-no');
 
 let pendingConfirmCallback = null;
 
-// Вспомогательные функции
+// --- Вспомогательные функции ---
+
 function showStatus(msg, isError = false) {
     statusBox.textContent = msg;
     statusBox.className = `status ${isError ? 'error' : 'success'}`;
@@ -32,17 +36,21 @@ function formatJSON(data) {
     return JSON.stringify(data, null, '\t');
 }
 
-// Валидация SchedulesRoot (поле current_datetime в ScheduleEntry не обязано присутствовать при проверке,
-// оно будет добавлено при миграции)
+// ---- ВАЛИДАЦИЯ SchedulesRoot (с учётом current_datetime) ----
+// Изменение: теперь проверяем наличие поля current_datetime в каждом ScheduleEntry,
+// потому что по спецификации оно обязательно.
 function isValidSchedulesRoot(data) {
     if (!data || typeof data !== 'object') return false;
     if (typeof data.current_datetime !== 'string') return false;
     if (!Array.isArray(data.schedules)) return false;
+
     for (const entry of data.schedules) {
+        // Обязательные поля для ScheduleEntry: date, current_datetime, schedule.activities
         if (!entry.date || typeof entry.date !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(entry.date)) return false;
+        if (typeof entry.current_datetime !== 'string') return false;   // <-- добавлено
         if (!entry.schedule || typeof entry.schedule !== 'object') return false;
         if (!Array.isArray(entry.schedule.activities)) return false;
-        // базовая проверка каждой активности
+
         for (const act of entry.schedule.activities) {
             if (typeof act.id !== 'number' || typeof act.activityTypeId !== 'number') return false;
             if (typeof act.start !== 'number' || typeof act.end !== 'number') return false;
@@ -52,18 +60,17 @@ function isValidSchedulesRoot(data) {
     return true;
 }
 
-// Загрузить данные из localStorage, проверить, отрисовать список
+// ---- ЗАГРУЗКА ДАННЫХ ИЗ LOCALSTORAGE ----
 function loadFromLocalStorage() {
     const stored = localStorage.getItem(STORAGE_KEY);
 
-///////////////
+    // отладочный вывод (можно оставить, но не обязательно)
     console.log('Raw stored:', stored);
     console.log('Type:', typeof stored);
     console.log('Length:', stored ? stored.length : 'null');
     if (stored && stored.charCodeAt(0) === 0xFEFF) {
         console.warn('BOM detected at start!');
     }
-//////////////
 
     if (!stored) {
         // создать пустой объект
@@ -81,17 +88,26 @@ function loadFromLocalStorage() {
         const parsed = JSON.parse(stored);
         if (isValidSchedulesRoot(parsed)) {
             currentSchedulesRoot = parsed;
-            // Миграция: добавить current_datetime для всех ScheduleEntry, если отсутствует
+
+            // ---- МИГРАЦИЯ 1: добавить current_datetime для всех ScheduleEntry, если отсутствует ----
+            // (хотя валидация теперь требует его наличия, но на случай старых данных, которые
+            // могли быть записаны до обновления валидации, всё равно добавляем)
             let needsSave = false;
             for (const entry of currentSchedulesRoot.schedules) {
                 if (!entry.current_datetime) {
                     entry.current_datetime = getCurrentDateTimeString();
                     needsSave = true;
                 }
+                // ---- МИГРАЦИЯ 2: удалить поле overlaps из schedule (если есть) ----
+                if (entry.schedule && entry.schedule.overlaps !== undefined) {
+                    delete entry.schedule.overlaps;
+                    needsSave = true;
+                }
             }
             if (needsSave) {
                 saveToLocalStorage();
             }
+
             sortSchedulesByDate();
             saveToLocalStorage(); // пересохраним отсортированными
             showStatus('Данные в localStorage корректны');
@@ -104,11 +120,8 @@ function loadFromLocalStorage() {
             datesContainer.innerHTML = '<p style="color:red;">Некорректные данные – список дат недоступен</p>';
         }
     } catch (e) {
-
-////////////
-    console.error('Parse error details:', e);
-    console.error('Problematic string:', stored);
-////////////        
+        console.error('Parse error details:', e);
+        console.error('Problematic string:', stored);
         // невалидный JSON
         currentSchedulesRoot = null;
         jsonEditor.value = stored || '';
@@ -130,7 +143,7 @@ function saveToLocalStorage() {
     }
 }
 
-// Отрисовка списка дат с чекбоксами
+// ---- ОТРИСОВКА СПИСКА ДАТ С ЧЕКБОКСАМИ ----
 function renderDatesList() {
     if (!currentSchedulesRoot || !currentSchedulesRoot.schedules) {
         datesContainer.innerHTML = '<p>Нет данных</p>';
@@ -151,7 +164,6 @@ function renderDatesList() {
     datesContainer.innerHTML = html;
 }
 
-// Получить выбранные даты (массив строк)
 function getSelectedDates() {
     const checkboxes = document.querySelectorAll('#dates-list input[type="checkbox"]');
     const selected = [];
@@ -161,8 +173,10 @@ function getSelectedDates() {
     return selected;
 }
 
-// Загрузить одну дату
-function loadSingleDate() {
+// ---- ЗАГРУЗКА В РЕДАКТОР (ЭКСПОРТ) ----
+// Изменение: перед загрузкой расписания в редактор обновляем current_datetime
+// для выбранных дат в самом хранилище (потому что экспорт – это взаимодействие).
+async function loadSingleDate() {
     const selected = getSelectedDates();
     if (selected.length !== 1) {
         showStatus('Ошибка: выберите ровно одну дату', true);
@@ -174,12 +188,16 @@ function loadSingleDate() {
         showStatus(`Ошибка: дата ${date} не найдена в хранилище`, true);
         return;
     }
+
+    // ---- ОБНОВЛЕНИЕ current_datetime ПРИ ЭКСПОРТЕ ----
+    entry.current_datetime = getCurrentDateTimeString();
+    saveToLocalStorage();
+
     jsonEditor.value = formatJSON(entry);
     showStatus(`Загружено расписание для даты ${date}`);
 }
 
-// Загрузить несколько дат (массив ScheduleEntry[])
-function loadMultipleDates() {
+async function loadMultipleDates() {
     const selected = getSelectedDates();
     if (selected.length < 2) {
         showStatus('Ошибка: выберите минимум две даты', true);
@@ -194,23 +212,31 @@ function loadMultipleDates() {
         showStatus('Ошибка: некоторые выбранные даты не найдены', true);
         return;
     }
+
+    // ---- ОБНОВЛЕНИЕ current_datetime ДЛЯ КАЖДОЙ ВЫБРАННОЙ ДАТЫ ПРИ ЭКСПОРТЕ ----
+    for (const entry of entries) {
+        entry.current_datetime = getCurrentDateTimeString();
+    }
+    saveToLocalStorage();
+
     jsonEditor.value = formatJSON(entries);
     showStatus(`Загружено расписаний: ${entries.length}`);
 }
 
-// Проверка, является ли объект ScheduleEntry (поля date и schedule обязательны, current_datetime не требуется)
+// ---- ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ДЛЯ ПРОВЕРКИ СТРУКТУРЫ ----
 function isScheduleEntry(obj) {
     return obj && typeof obj === 'object' && typeof obj.date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(obj.date)
         && obj.schedule && typeof obj.schedule === 'object' && Array.isArray(obj.schedule.activities);
 }
 
-// Проверка массива ScheduleEntry[]
 function isScheduleEntryArray(arr) {
     if (!Array.isArray(arr)) return false;
     return arr.every(item => isScheduleEntry(item));
 }
 
-// Применить одну дату
+// ---- ПРИМЕНЕНИЕ ОДНОЙ ДАТЫ (ИМПОРТ) ----
+// Изменение: при импорте current_datetime всегда перезаписывается текущим временем,
+// а также в процессе миграции удаляется overlaps (если есть).
 async function applySingleDate() {
     const text = jsonEditor.value.trim();
     if (!text) {
@@ -228,12 +254,18 @@ async function applySingleDate() {
         showStatus('Ошибка: содержимое редактора не соответствует формату ScheduleEntry', true);
         return;
     }
+
+    // ---- МИГРАЦИЯ: удаляем overlaps из schedule (если есть) ----
+    if (parsed.schedule && parsed.schedule.overlaps !== undefined) {
+        delete parsed.schedule.overlaps;
+    }
+
     const date = parsed.date;
-    // Установить current_datetime на текущее время (игнорируем то, что пришло в JSON)
+    // ---- ИГНОРИРУЕМ current_datetime ИЗ ИМПОРТА, СТАВИМ ТЕКУЩЕЕ ВРЕМЯ ----
     parsed.current_datetime = getCurrentDateTimeString();
+
     const existingIndex = currentSchedulesRoot.schedules.findIndex(s => s.date === date);
     if (existingIndex !== -1) {
-        // спрашиваем подтверждение
         const confirmed = await showConfirm(`Дата ${date} уже существует. Перезаписать?`);
         if (!confirmed) return;
         currentSchedulesRoot.schedules[existingIndex] = parsed;
@@ -245,12 +277,11 @@ async function applySingleDate() {
     sortSchedulesByDate();
     saveToLocalStorage();
     renderDatesList();
-    // очистить чекбокс этой даты
     const chk = document.getElementById(`chk_${date}`);
     if (chk) chk.checked = false;
 }
 
-// Применить несколько дат
+// ---- ПРИМЕНЕНИЕ НЕСКОЛЬКИХ ДАТ (ИМПОРТ) ----
 async function applyMultipleDates() {
     const text = jsonEditor.value.trim();
     if (!text) {
@@ -269,6 +300,13 @@ async function applyMultipleDates() {
         return;
     }
 
+    // ---- МИГРАЦИЯ: удаляем overlaps из каждого schedule ----
+    for (const entry of parsed) {
+        if (entry.schedule && entry.schedule.overlaps !== undefined) {
+            delete entry.schedule.overlaps;
+        }
+    }
+
     const existingDates = [];
     const newDates = [];
     for (const entry of parsed) {
@@ -281,9 +319,9 @@ async function applyMultipleDates() {
         const confirmed = await showConfirm(msg);
         if (!confirmed) return;
     }
-    // выполняем перезапись и добавление, устанавливая current_datetime на текущее время
     for (const entry of parsed) {
-        entry.current_datetime = getCurrentDateTimeString(); // игнорируем значение из JSON
+        // ---- ИГНОРИРУЕМ current_datetime ИЗ ИМПОРТА ----
+        entry.current_datetime = getCurrentDateTimeString();
         const idx = currentSchedulesRoot.schedules.findIndex(s => s.date === entry.date);
         if (idx !== -1) currentSchedulesRoot.schedules[idx] = entry;
         else currentSchedulesRoot.schedules.push(entry);
@@ -291,13 +329,12 @@ async function applyMultipleDates() {
     sortSchedulesByDate();
     saveToLocalStorage();
     renderDatesList();
-    // очистить все чекбоксы
     const allCheckboxes = document.querySelectorAll('#dates-list input[type="checkbox"]');
     allCheckboxes.forEach(cb => cb.checked = false);
     showStatus(`Добавлено дат: ${newDates.length} (${newDates.join(', ') || 'нет'}). Перезаписано дат: ${existingDates.length} (${existingDates.join(', ') || 'нет'})`);
 }
 
-// Удалить выбранные расписания
+// ---- УДАЛЕНИЕ ВЫБРАННЫХ РАСПИСАНИЙ ----
 async function deleteSelectedDates() {
     const selected = getSelectedDates();
     if (selected.length === 0) {
@@ -315,10 +352,10 @@ async function deleteSelectedDates() {
     saveToLocalStorage();
     renderDatesList();
     showStatus(`Удалено расписаний: ${deletedCount} (${selected.join(', ')})`);
-    jsonEditor.value = ''; // очищаем редактор после удаления
+    jsonEditor.value = '';
 }
 
-// Модальное окно с подтверждением (промис)
+// ---- МОДАЛЬНОЕ ОКНО ПОДТВЕРЖДЕНИЯ ----
 function showConfirm(message) {
     return new Promise((resolve) => {
         confirmMessage.textContent = message;
@@ -367,7 +404,7 @@ function deselectAll() {
     checkboxes.forEach(cb => cb.checked = false);
 }
 
-// Инициализация
+// ---- ИНИЦИАЛИЗАЦИЯ ----
 function init() {
     loadFromLocalStorage();
     loadSingleBtn.onclick = loadSingleDate;
