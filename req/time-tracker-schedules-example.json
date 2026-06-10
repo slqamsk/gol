@@ -1,292 +1,314 @@
 {
-  "current_datetime": "2026-06-06T12:00:00+03:00",
+  "current_datetime": "2026-06-10T23:15:32.239+03:00",
   "schedules": [
-    {
-      "date": "2026-06-06",
-      "schedule": {
-        "activities": [
-          {
-            "id": 1,
-            "activityTypeId": 40101,
-            "start": 0,
-            "end": 480,
-            "delta": 480,
-            "active": 470,
-            "interruptBreaks": 5,
-            "distractionBreaks": 5,
-            "comment": "Ночной сон",
-            "status": "done"
-          },
-          {
-            "id": 2,
-            "activityTypeId": 40301,
-            "start": 480,
-            "end": 510,
-            "delta": 30,
-            "active": 28,
-            "interruptBreaks": 1,
-            "distractionBreaks": 1,
-            "comment": "Утренняя гигиена",
-            "status": "done"
-          },
-          {
-            "id": 3,
-            "activityTypeId": 40401,
-            "start": 540,
-            "end": 600,
-            "delta": 60,
-            "active": 55,
-            "interruptBreaks": 3,
-            "distractionBreaks": 2,
-            "comment": "Работа 1",
-            "status": "done"
-          },
-          {
-            "id": 4,
-            "activityTypeId": 40201,
-            "start": 570,
-            "end": 600,
-            "delta": 30,
-            "active": 25,
-            "interruptBreaks": 2,
-            "distractionBreaks": 3,
-            "comment": "Завтрак (пересекается с работой 1)",
-            "status": "done"
-          },
-          {
-            "id": 5,
-            "activityTypeId": 40401,
-            "start": 600,
-            "end": 660,
-            "delta": 60,
-            "active": 52,
-            "interruptBreaks": 4,
-            "distractionBreaks": 4,
-            "comment": "Работа 2",
-            "status": "done"
-          },
-          {
-            "id": 6,
-            "activityTypeId": 40202,
-            "start": 615,
-            "end": 645,
-            "delta": 30,
-            "active": 27,
-            "interruptBreaks": 1,
-            "distractionBreaks": 2,
-            "comment": "Завтрак-2 (пересекается)",
-            "status": "done"
-          },
-          {
-            "id": 7,
-            "activityTypeId": 30101,
-            "start": 630,
-            "end": 660,
-            "delta": 30,
-            "active": 25,
-            "interruptBreaks": 3,
-            "distractionBreaks": 2,
-            "comment": "Прогулка (пересекается, 3 одновременно)",
-            "status": "done"
-          },
-          {
-            "id": 8,
-            "activityTypeId": 40401,
-            "start": 660,
-            "end": 720,
-            "delta": 60,
-            "active": 58,
-            "interruptBreaks": 1,
-            "distractionBreaks": 1,
-            "comment": "Работа 3",
-            "status": "done"
-          },
-          {
-            "id": 9,
-            "activityTypeId": 20101,
-            "start": 660,
-            "end": 720,
-            "delta": 60,
-            "active": 55,
-            "interruptBreaks": 3,
-            "distractionBreaks": 2,
-            "comment": "Бассейн (пересекается с работой 3)",
-            "status": "done"
-          },
-          {
-            "id": 10,
-            "activityTypeId": 40401,
-            "start": 720,
-            "end": 780,
-            "delta": 60,
-            "active": 57,
-            "interruptBreaks": 2,
-            "distractionBreaks": 1,
-            "comment": "Работа 4",
-            "status": "done"
-          },
-          {
-            "id": 11,
-            "activityTypeId": 40203,
-            "start": 750,
-            "end": 780,
-            "delta": 30,
-            "active": 28,
-            "interruptBreaks": 1,
-            "distractionBreaks": 1,
-            "comment": "Обед (пересекается)",
-            "status": "done"
-          },
-          {
-            "id": 12,
-            "activityTypeId": 40401,
-            "start": 780,
-            "end": 840,
-            "delta": 60,
-            "active": 50,
-            "interruptBreaks": 5,
-            "distractionBreaks": 5,
-            "comment": "Работа 5",
-            "status": "done"
-          },
-          {
-            "id": 13,
-            "activityTypeId": 30401,
-            "start": 810,
-            "end": 870,
-            "delta": 60,
-            "active": 55,
-            "interruptBreaks": 3,
-            "distractionBreaks": 2,
-            "comment": "Чтение (пересекается)",
-            "status": "done"
-          },
-          {
-            "id": 14,
-            "activityTypeId": 30301,
-            "start": 810,
-            "end": 840,
-            "delta": 30,
-            "active": 27,
-            "interruptBreaks": 2,
-            "distractionBreaks": 1,
-            "comment": "Обучение (пересекается, 3 одновременно)",
-            "status": "done"
-          },
-          {
-            "id": 15,
-            "activityTypeId": 40204,
-            "start": 825,
-            "end": 855,
-            "delta": 30,
-            "active": 28,
-            "interruptBreaks": 1,
-            "distractionBreaks": 1,
-            "comment": "Ужин (4 одновременно: работа5, чтение, обучение, ужин)",
-            "status": "done"
-          },
-          {
-            "id": 16,
-            "activityTypeId": 40401,
-            "start": 840,
-            "end": 900,
-            "delta": 60,
-            "active": 56,
-            "interruptBreaks": 2,
-            "distractionBreaks": 2,
-            "comment": "Работа 6",
-            "status": "done"
-          },
-          {
-            "id": 17,
-            "activityTypeId": 40205,
-            "start": 855,
-            "end": 885,
-            "delta": 30,
-            "active": 27,
-            "interruptBreaks": 2,
-            "distractionBreaks": 1,
-            "comment": "Ужин-2 (пересекается с работой6 и чтением)",
-            "status": "done"
-          },
-          {
-            "id": 18,
-            "activityTypeId": 30401,
-            "start": 870,
-            "end": 900,
-            "delta": 30,
-            "active": 28,
-            "interruptBreaks": 1,
-            "distractionBreaks": 1,
-            "comment": "Чтение (продолжение)",
-            "status": "done"
-          },
-          {
-            "id": 19,
-            "activityTypeId": 40302,
-            "start": 900,
-            "end": 915,
-            "delta": 15,
-            "active": 14,
-            "interruptBreaks": 0,
-            "distractionBreaks": 1,
-            "comment": "Вечерняя гигиена",
-            "status": "done"
-          },
-          {
-            "id": 20,
-            "activityTypeId": 40101,
-            "start": 930,
-            "end": 990,
-            "delta": 60,
-            "interruptBreaks": 2,
-            "distractionBreaks": 2,
-            "active": 56,
-            "comment": "Подготовка ко сну",
-            "status": "planned"
-          }
-        ]
+
+{
+  "current_datetime": "2026-06-10T23:15:32.239+03:00",
+  "date": "2026-06-11",
+  "schedule": {
+    "activities": [
+      {
+        "id": 1,
+        "activityTypeId": 40101,
+        "start": 0,
+        "end": 480,
+        "delta": 480,
+        "active": 480,
+        "interruptBreaks": 0,
+        "distractionBreaks": 0,
+        "comment": "Ночной сон",
+        "status": "planned"
+      },
+      {
+        "id": 2,
+        "activityTypeId": 40301,
+        "start": 480,
+        "end": 510,
+        "delta": 30,
+        "active": 30,
+        "interruptBreaks": 0,
+        "distractionBreaks": 0,
+        "comment": "Утренняя гигиена",
+        "status": "planned"
+      },
+      {
+        "id": 3,
+        "activityTypeId": 30101,
+        "start": 510,
+        "end": 540,
+        "delta": 30,
+        "active": 30,
+        "interruptBreaks": 0,
+        "distractionBreaks": 0,
+        "comment": "Прогулка",
+        "status": "planned"
+      },
+      {
+        "id": 4,
+        "activityTypeId": 40201,
+        "start": 540,
+        "end": 555,
+        "delta": 15,
+        "active": 15,
+        "interruptBreaks": 0,
+        "distractionBreaks": 0,
+        "comment": "Завтрак",
+        "status": "planned"
+      },
+      {
+        "id": 5,
+        "activityTypeId": 40401,
+        "start": 555,
+        "end": 615,
+        "delta": 60,
+        "active": 60,
+        "interruptBreaks": 0,
+        "distractionBreaks": 0,
+        "comment": "Текущая работа",
+        "status": "planned"
+      },
+      {
+        "id": 6,
+        "activityTypeId": 30201,
+        "start": 630,
+        "end": 690,
+        "delta": 60,
+        "active": 60,
+        "interruptBreaks": 0,
+        "distractionBreaks": 0,
+        "comment": "Разработка курсов - новые курсы",
+        "status": "planned"
+      },
+      {
+        "id": 7,
+        "activityTypeId": 50101,
+        "start": 690,
+        "end": 720,
+        "delta": 30,
+        "active": 30,
+        "interruptBreaks": 0,
+        "distractionBreaks": 0,
+        "comment": "Приготовление еды",
+        "status": "planned"
+      },
+      {
+        "id": 8,
+        "activityTypeId": 30101,
+        "start": 720,
+        "end": 750,
+        "delta": 30,
+        "active": 30,
+        "interruptBreaks": 0,
+        "distractionBreaks": 0,
+        "comment": "Прогулка",
+        "status": "planned"
+      },
+      {
+        "id": 9,
+        "activityTypeId": 20301,
+        "start": 750,
+        "end": 810,
+        "delta": 60,
+        "active": 60,
+        "interruptBreaks": 0,
+        "distractionBreaks": 0,
+        "comment": "Поиск работы",
+        "status": "planned"
+      },
+      {
+        "id": 10,
+        "activityTypeId": 40203,
+        "start": 810,
+        "end": 825,
+        "delta": 15,
+        "active": 15,
+        "interruptBreaks": 0,
+        "distractionBreaks": 0,
+        "comment": "Обед",
+        "status": "planned"
+      },
+      {
+        "id": 11,
+        "activityTypeId": 40401,
+        "start": 825,
+        "end": 885,
+        "delta": 60,
+        "active": 60,
+        "interruptBreaks": 0,
+        "distractionBreaks": 0,
+        "comment": "Текущая работа",
+        "status": "planned"
+      },
+      {
+        "id": 12,
+        "activityTypeId": 50101,
+        "start": 885,
+        "end": 915,
+        "delta": 30,
+        "active": 30,
+        "interruptBreaks": 0,
+        "distractionBreaks": 0,
+        "comment": "Приготовление еды",
+        "status": "planned"
+      },
+      {
+        "id": 13,
+        "activityTypeId": 30201,
+        "start": 915,
+        "end": 975,
+        "delta": 60,
+        "active": 60,
+        "interruptBreaks": 0,
+        "distractionBreaks": 0,
+        "comment": "Разработка курсов - новые курсы",
+        "status": "planned"
+      },
+      {
+        "id": 14,
+        "activityTypeId": 50102,
+        "start": 975,
+        "end": 1005,
+        "delta": 30,
+        "active": 30,
+        "interruptBreaks": 0,
+        "distractionBreaks": 0,
+        "comment": "Мытьё посуды",
+        "status": "planned"
+      },
+      {
+        "id": 15,
+        "activityTypeId": 20301,
+        "start": 1005,
+        "end": 1065,
+        "delta": 60,
+        "active": 60,
+        "interruptBreaks": 0,
+        "distractionBreaks": 0,
+        "comment": "Поиск работы",
+        "status": "planned"
+      },
+      {
+        "id": 16,
+        "activityTypeId": 50108,
+        "start": 1065,
+        "end": 1095,
+        "delta": 30,
+        "active": 30,
+        "interruptBreaks": 0,
+        "distractionBreaks": 0,
+        "comment": "Наведение порядка",
+        "status": "planned"
+      },
+      {
+        "id": 17,
+        "activityTypeId": 40204,
+        "start": 1110,
+        "end": 1125,
+        "delta": 15,
+        "active": 15,
+        "interruptBreaks": 0,
+        "distractionBreaks": 0,
+        "comment": "Ужин",
+        "status": "planned"
+      },
+      {
+        "id": 18,
+        "activityTypeId": 50110,
+        "start": 1125,
+        "end": 1140,
+        "delta": 15,
+        "active": 15,
+        "interruptBreaks": 0,
+        "distractionBreaks": 0,
+        "comment": "Сбор сумки в бассейн",
+        "status": "planned"
+      },
+      {
+        "id": 19,
+        "activityTypeId": 20101,
+        "start": 1140,
+        "end": 1200,
+        "delta": 60,
+        "active": 60,
+        "interruptBreaks": 0,
+        "distractionBreaks": 0,
+        "comment": "Бассейн",
+        "status": "planned"
+      },
+      {
+        "id": 20,
+        "activityTypeId": 40302,
+        "start": 1200,
+        "end": 1230,
+        "delta": 30,
+        "active": 30,
+        "interruptBreaks": 0,
+        "distractionBreaks": 0,
+        "comment": "Вечерняя гигиена",
+        "status": "planned"
+      },
+      {
+        "id": 21,
+        "activityTypeId": 30401,
+        "start": 1230,
+        "end": 1290,
+        "delta": 60,
+        "active": 60,
+        "interruptBreaks": 0,
+        "distractionBreaks": 0,
+        "comment": "Чтение",
+        "status": "planned"
+      },
+      {
+        "id": 22,
+        "activityTypeId": 20405,
+        "start": 1290,
+        "end": 1320,
+        "delta": 30,
+        "active": 30,
+        "interruptBreaks": 0,
+        "distractionBreaks": 0,
+        "comment": "Онлайн-знакомства",
+        "status": "planned"
+      },
+      {
+        "id": 23,
+        "activityTypeId": 40205,
+        "start": 1320,
+        "end": 1335,
+        "delta": 15,
+        "active": 15,
+        "interruptBreaks": 0,
+        "distractionBreaks": 0,
+        "comment": "Ужин-2",
+        "status": "planned"
+      },
+      {
+        "id": 24,
+        "activityTypeId": 30401,
+        "start": 1335,
+        "end": 1395,
+        "delta": 60,
+        "active": 60,
+        "interruptBreaks": 0,
+        "distractionBreaks": 0,
+        "comment": "Чтение",
+        "status": "planned"
+      },
+      {
+        "id": 25,
+        "activityTypeId": 30501,
+        "start": 1395,
+        "end": 1440,
+        "delta": 45,
+        "active": 45,
+        "interruptBreaks": 0,
+        "distractionBreaks": 0,
+        "comment": "Музлит-классика",
+        "status": "planned"
       }
-    },
-    {
-      "date": "2026-06-05",
-      "schedule": {
-        "activities": [
-          {
-            "id": 1,
-            "activityTypeId": 40101,
-            "start": 0,
-            "end": 480,
-            "delta": 480,
-            "active": 470,
-            "interruptBreaks": 5,
-            "distractionBreaks": 5,
-            "status": "done"
-          },
-          {
-            "id": 2,
-            "activityTypeId": 40201,
-            "start": 510,
-            "end": 540,
-            "delta": 30,
-            "active": 28,
-            "interruptBreaks": 1,
-            "distractionBreaks": 1,
-            "status": "done"
-          },
-          {
-            "id": 3,
-            "activityTypeId": 40401,
-            "start": 540,
-            "end": 720,
-            "delta": 180,
-            "active": 170,
-            "interruptBreaks": 5,
-            "distractionBreaks": 5,
-            "status": "done"
-          }
-        ]
-      }
-    }
+    ]
+  }
+}
   ]
 }
