@@ -1,6 +1,7 @@
 ## Раздел 7.3. Правила валидации значений перед сохранением активности
 
-Все временные значения находятся в минутах от полуночи в диапазоне [0, 1440]. Длительность любой активности (delta) заведомо не превышает 20 часов (1200 минут), что гарантирует, что при «прижатии» задачи к одной границе (0 или 1440) она не может выйти за другую границу. Поэтому в коде достаточно проверить и скорректировать только ту границу, которая выходит за пределы, без дополнительной проверки противоположной границы. При использовании прототипа пользователи будут выполнять эти требования и не введут некорректные значения.
+### Бизнес-правила
+- После валидации активное время active в минутах должно быть строго больше нуля. Активность, в которой пользователь не выполнял полезных действий (только перерывы), не имеет смысла и не должна сохраняться. Это правило применяется как при ручном вводе, так и после всех корректирующих диалогов.
 
 
 
@@ -48,37 +49,43 @@ async function saveActivity() {
  * @returns {Promise<Object|null>} — возвращает скорректированный newAct или null при отмене
  */
 async function validateAndFix(oldAct, newAct) {
-    // Валидация применяется только при редактировании существующей активности (когда oldAct !== null). Для новой активности проверки не выполняются, активность сохраняется с теми значениями, которые пользователь ввёл в форму. Это обусловлено тем, что при создании активности пользователь последовательно заполняет все поля, и вероятность ошибки минимальна.
-    if (oldAct === null) {
-        return newAct;
-    }
 
     if (newAct.delta > 1200) {
         /// Сообщение: значение delta некорректное, должно быть меньше 1200. Исправьте.
         /// Кнопка "Вернуться к редактированию" -> return null;
     }
 
-    if (newAct.delta < 0 || newAct.start < 0 || newAct.end < 0) {
+    if (newAct.delta < 0 || newAct.start < 0 || newAct.end < 0 || newAct.active < 0 || newAct.interruptBreaks < 0 || newAct.distractionBreaks < 0) {
         /// Отрицательные значения не допускаются. Исправьте.
         /// Кнопка "Вернуться к редактированию" -> return null;
     }
     
     // 1. Проверка двух обязательных условий
     const timeRuleOk = (newAct.delta === newAct.end - newAct.start);
-    const compositionRuleOk = (newAct.delta === newAct.active + newAct.interruptBreaks + newAct.distractionBreaks);
+    const compositionRuleOk = (newAct.delta === newAct.active + newAct.interruptBreaks + newAct.distractionBreaks && newAct.delta > 0 && newAct.active > 0);
     
     // 2. Если оба правила соблюдены — возвращаем newAct без изменений
     if (timeRuleOk && compositionRuleOk) {
         return newAct;
     }
     
-    // 3. Определяем, какие поля были изменены (oldAct существует)
-    const startChanged = oldAct.start !== newAct.start;
-    const endChanged   = oldAct.end !== newAct.end;
-    const deltaChanged = oldAct.delta !== newAct.delta;
-    const activeChanged = oldAct.active !== newAct.active;
-    const intChanged   = oldAct.interruptBreaks !== newAct.interruptBreaks;
-    const distChanged  = oldAct.distractionBreaks !== newAct.distractionBreaks;
+    // 3. Определяем, какие поля были изменены (для новых активностей считаем, что всё изменено)
+    // Для новой активности (oldAct === null) все флаги изменений устанавливаются в true, чтобы применить полную валидацию ко всем полям.
+    let startChanged = true;
+    let endChanged = true;
+    let deltaChanged = true;
+    let activeChanged = true;
+    let intChanged = true;
+    let distChanged = true;    
+    if (!(oldAct === null)) {
+        startChanged = oldAct.start !== newAct.start;
+        endChanged   = oldAct.end !== newAct.end;
+        deltaChanged = oldAct.delta !== newAct.delta;
+        activeChanged = oldAct.active !== newAct.active;
+        intChanged   = oldAct.interruptBreaks !== newAct.interruptBreaks;
+        distChanged  = oldAct.distractionBreaks !== newAct.distractionBreaks;
+    }
+
     
     // 4. Разветвление по случаям (будет добавлена полная логика из таблиц решений)
     //    Случай 1, Случай 2, Случай 3
@@ -93,6 +100,9 @@ async function validateAndFix(oldAct, newAct) {
     // Условие: !intChanged && !distChanged && !activeChanged 
 
 #### Шаг-1: обработка start, end и delta
+Все подслучаи Случая 1 не должны содержать return newAct до выполнения Шага 2. 
+После коррекции времени управление передаётся Шагу 2.
+
 
 ##### Изменен только start
 
@@ -117,13 +127,13 @@ if (!startChanged && endChanged && !deltaChanged) {
         /// Показать диалог с 2-мя вариантами:
         /// Сохранить дельту = newAct.delta и время окончания = newAct.end, изменить время начала с newAct.start на (newAct.end - newAct.delta)
         /// Сохранить время начала = newAct.start и время окончания = newAct.end, изменить дельту с newAct.delta на (newAct.end - newAct.start)
-        /// Отмена – возврат null  
+        /// При выборе любого варианта применить соответствующую коррекцию полей и продолжить выполнение (перейти к проверке границ и шагу 2).        
+        /// И кнопкой "Вернуться к редактированию" -> return null;
     }
     if (newAct.start < 0) {
         newAct.start = 0;
         newAct.end = newAct.delta;
     }
-    return newAct;
 }
 ```
 
@@ -192,16 +202,20 @@ if (!startChanged && endChanged && deltaChanged) {
 ```javascript
 // ------ Изменены все три поля (или любая комбинация, не покрытая выше) ------
 if (startChanged && endChanged && deltaChanged) {
-    /// Показать диалог с 3-мя вариантами:
-    /// Сохранить время начала  newAct.start и дельту newAct.delta, изменить время окончания с newAct.end на (newAct.start + newAct.delta)
-    /// Сохранить время окончания  newAct.end и дельту newAct.delta, изменить время начала с newAct.start на (newAct.end - newAct.delta)
-    /// Сохранить время начала  newAct.start и время окончания  newAct.end, изменить дельту с newAct.delta на (newAct.end - newAct.start)
-    /// И кнопкой Отмена -> return null;
-    /// применить выбранный вариант и скорректировать границы
+            /// Показать диалог с 3-мя вариантами: 
+            /// 1. Этот вариант показываем только если (newAct.start + newAct.delta) <=1440
+            ///       Сохранить время начала  newAct.start и дельту newAct.delta, изменить время окончания с newAct.end на (newAct.start + newAct.delta)
+            /// 2. Этот вариант показываем только если (newAct.end - newAct.delta) >= 0  
+            ///       Сохранить время окончания  newAct.end и дельту newAct.delta, изменить время начала с newAct.start на (newAct.end - newAct.delta)
+            /// 3. Этот вариант показываем только если (newAct.end - newAct.start) > 0  
+            ///       Сохранить время начала  newAct.start и время окончания  newAct.end, изменить дельту с newAct.delta на (newAct.end - newAct.start)
+            /// При выборе любого варианта применить соответствующую коррекцию полей и продолжить выполнение (перейти к проверке границ и шагу 2).            
+            /// Если ни один из вариантов не показан, то вывести сообщение: "Введённая комбинация данных (время начала = newAct.start, время окончания = newAct.end, дельта = newAct.delta) неконсистентна. "
+            /// И кнопкой "Вернуться к редактированию" -> return null;
 }
 ```
 
-#### Шаг-2: обработка active, interruptBreaks, distractionBreaks
+#### Шаг-2: Выполняется после всех вариантов случая-1 (обработка active, interruptBreaks, distractionBreaks)
 
 ```javascript
     newAct.active = newAct.delta - (newAct.interruptBreaks + newAct.distractionBreaks);
@@ -222,11 +236,16 @@ if (startChanged && endChanged && deltaChanged) {
     if (activeChanged || intChanged || distChanged) {
         // --- Шаг 1 ---
         if (newAct.delta !== newAct.end - newAct.start) {
-            /// Показать диалог с 3-мя вариантами:
-            /// Сохранить время начала = newAct.start и дельту = newAct.delta, изменить время окончания с newAct.end на (newAct.start + newAct.delta)
-            /// Сохранить время окончания = newAct.end и дельту = newAct.delta, изменить время начала с newAct.start на (newAct.end - newAct.delta)
-            /// Сохранить время начала = newAct.start и время окончания = newAct.end, изменить дельту с newAct.delta на (newAct.end - newAct.start)
-            /// И кнопкой Отмена -> return null;
+            /// Показать диалог с 3-мя вариантами: 
+            /// 1. Этот вариант показываем только если (newAct.start + newAct.delta) <=1440
+            ///       Сохранить время начала  newAct.start и дельту newAct.delta, изменить время окончания с newAct.end на (newAct.start + newAct.delta)
+            /// 2. Этот вариант показываем только если (newAct.end - newAct.delta) >= 0  
+            ///       Сохранить время окончания  newAct.end и дельту newAct.delta, изменить время начала с newAct.start на (newAct.end - newAct.delta)
+            /// 3. Этот вариант показываем только если (newAct.end - newAct.start) > 0  
+            ///       Сохранить время начала  newAct.start и время окончания  newAct.end, изменить дельту с newAct.delta на (newAct.end - newAct.start)
+            /// При выборе любого варианта применить соответствующую коррекцию полей и продолжить выполнение (перейти к проверке границ и шагу 2).            
+            /// Если ни один из вариантов не показан, то вывести сообщение: "Введённая комбинация данных (время начала = newAct.start, время окончания = newAct.end, дельта = newAct.delta) неконсистентна. "
+            /// И кнопкой "Вернуться к редактированию" -> return null;
         }
         // --- Шаг 2 ---
         if (newAct.delta !== newAct.active + newAct.interruptBreaks + newAct.distractionBreaks) {
@@ -235,10 +254,11 @@ if (startChanged && endChanged && deltaChanged) {
             /// Показать диалог с вариантами:
             /// 1. Этот вариант показываем только если newAct.delta - (newAct.interruptBreaks + newAct.distractionBreaks) > 0 
             ///       Сохранить interruptBreaks = newAct.interruptBreaks и distractionBreaks = newAct.distractionBreaks, изменить active = newAct.delta - (newAct.interruptBreaks + newAct.distractionBreaks)
-            /// 2. Этот вариант показываем только если newAct.delta - (newAct.interruptBreaks + newAct.active) >=0
+            /// 2. Этот вариант показываем только если newAct.delta - (newAct.interruptBreaks + newAct.active) >=0 и newAct.active > 0
             ///       Сохранить interruptBreaks = newAct.interruptBreaks и active = newAct.active, изменить  distractionBreaks = newAct.delta - (newAct.interruptBreaks + newAct.active)
-            /// Если не показываем ни один вариант, то пишем "В параметрах active, interruptBreaks и distractionBreaks находятся неконсистентные данные - исправьте перед сохранением." При этом единственная кнопка на диалоге будет Отмена
-            /// И кнопкой Отмена -> return null;
+            /// При выборе любого варианта применить соответствующую коррекцию полей и продолжить выполнение.          
+            /// Если не показываем ни один вариант, то пишем "В параметрах active, interruptBreaks и distractionBreaks находятся неконсистентные данные - исправьте перед сохранением." При этом единственная кнопка на диалоге будет "Вернуться к редактированию"
+            /// И кнопкой "Вернуться к редактированию" -> return null;
         }
         return newAct;
     }
