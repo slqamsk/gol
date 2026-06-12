@@ -212,7 +212,7 @@ if (startChanged && endChanged && deltaChanged) {
                 newAct.end = 1440;
                 newAct.start = 1440 - newAct.delta;
             }
-            newAct.active = newAct.delta;
+            newAct.active = newAct.delta - (newAct.interruptBreaks + newAct.distractionBreaks);
             return newAct;
         }
 ```
@@ -225,7 +225,7 @@ if (startChanged && endChanged && deltaChanged) {
 if (!startChanged && endChanged && !deltaChanged) {
     if (newAct.end > newAct.start) {
         newAct.delta = newAct.end - newAct.start;
-        newAct.active = newAct.delta;
+        newAct.active = newAct.delta - (newAct.interruptBreaks + newAct.distractionBreaks);
         return newAct;
     } else {
         // Диалог: "Время окончания должно быть больше времени начала. Исправьте значения."
@@ -245,7 +245,7 @@ if (!startChanged && !endChanged && deltaChanged) {
             newAct.end = 1440;
             newAct.start = 1440 - newAct.delta;
         }
-        newAct.active = newAct.delta;
+        newAct.active = newAct.delta - (newAct.interruptBreaks + newAct.distractionBreaks);
         return newAct;
     } else {
         // Диалог: "Дельта должна быть положительной. Исправьте значение."
@@ -263,7 +263,7 @@ if (!startChanged && !endChanged && deltaChanged) {
 if (startChanged && endChanged && !deltaChanged) {
     newAct.delta = newAct.end - newAct.start;
     if (newAct.delta > 0) {
-        newAct.active = newAct.delta;
+        newAct.active = newAct.delta - (newAct.interruptBreaks + newAct.distractionBreaks);
         return newAct;
     } else {
         // Диалог: "Время окончания должно быть больше времени начала."
@@ -283,7 +283,7 @@ if (startChanged && !endChanged && deltaChanged) {
         newAct.end = 1440;
         newAct.start = 1440 - newAct.delta;
     }
-    newAct.active = newAct.delta;
+    newAct.active = newAct.delta - (newAct.interruptBreaks + newAct.distractionBreaks);
     return newAct;
 }
 ```
@@ -298,7 +298,7 @@ if (!startChanged && endChanged && deltaChanged) {
         newAct.start = 0;
         newAct.end = newAct.delta;
     }
-    newAct.active = newAct.delta;
+    newAct.active = newAct.delta - (newAct.interruptBreaks + newAct.distractionBreaks);
     return newAct;
 }
 ```
