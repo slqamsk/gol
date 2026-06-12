@@ -74,12 +74,13 @@ async function validateAndFix(oldAct, newAct) {
 }
 ```
 
-### Случай 1: перерывы были нулевыми и не изменились, active не изменился
-    // Условие: !intChanged && !distChanged && !activeChanged &&
-    //          oldAct.interruptBreaks === 0 && oldAct.distractionBreaks === 0 &&
-    //          newAct.interruptBreaks === 0 && newAct.distractionBreaks === 0
 
-#### Изменен только start
+### Случай 1: перерывы и active не менялись
+    // Условие: !intChanged && !distChanged && !activeChanged 
+
+#### Шаг-1: обработка start, end и delta
+
+##### Изменен только start
 
 ```java
         // ------ 1. Изменён только start ------
@@ -89,21 +90,15 @@ async function validateAndFix(oldAct, newAct) {
                 newAct.end = 1440;
                 newAct.start = 1440 - newAct.delta;
             }
-            newAct.active = newAct.delta;
-            return newAct;
         }
 ```
 
-
-
-#### Изменён только `end`
+##### Изменён только `end`
 
 ```javascript
 if (!startChanged && endChanged && !deltaChanged) {
     if (newAct.end > newAct.start) {
         newAct.delta = newAct.end - newAct.start;
-        newAct.active = newAct.delta;
-        return newAct;
     } else {
         // Диалог: "Время окончания должно быть больше времени начала. Исправьте значения."
         // Кнопка: "Вернуться к редактированию" (единственная).
@@ -113,7 +108,7 @@ if (!startChanged && endChanged && !deltaChanged) {
 }
 ```
 
-#### Изменён только `delta`
+##### Изменён только `delta`
 ```java
 if (!startChanged && !endChanged && deltaChanged) {
     if (newAct.delta > 0) {
@@ -122,8 +117,6 @@ if (!startChanged && !endChanged && deltaChanged) {
             newAct.end = 1440;
             newAct.start = 1440 - newAct.delta;
         }
-        newAct.active = newAct.delta;
-        return newAct;
     } else {
         // Диалог: "Дельта должна быть положительной. Исправьте значение."
         // Кнопка: "Вернуться к редактированию" (единственная).
@@ -133,16 +126,13 @@ if (!startChanged && !endChanged && deltaChanged) {
 ```
 
 
-#### Изменены `start` и `end` (delta не менялась)
+##### Изменены `start` и `end` (delta не менялась)
 
 ```javascript
 // ------ Изменены start и end ------
 if (startChanged && endChanged && !deltaChanged) {
     newAct.delta = newAct.end - newAct.start;
-    if (newAct.delta > 0) {
-        newAct.active = newAct.delta;
-        return newAct;
-    } else {
+    if (newAct.delta <= 0) {
         // Диалог: "Время окончания должно быть больше времени начала."
         // Кнопка: "Вернуться к редактированию"
         return null;
@@ -160,12 +150,10 @@ if (startChanged && !endChanged && deltaChanged) {
         newAct.end = 1440;
         newAct.start = 1440 - newAct.delta;
     }
-    newAct.active = newAct.delta;
-    return newAct;
 }
 ```
 
-### Изменены `delta` и `end` (start не менялся)
+#### Изменены `delta` и `end` (start не менялся)
 
 ```javascript
 // ------ Изменены delta и end ------
@@ -175,14 +163,12 @@ if (!startChanged && endChanged && deltaChanged) {
         newAct.start = 0;
         newAct.end = newAct.delta;
     }
-    newAct.active = newAct.delta;
-    return newAct;
 }
 ```
 
 ---
 
-#### Изменены все три поля (`start`, `end`, `delta`)
+##### Изменены все три поля (`start`, `end`, `delta`)
 
 ```javascript
 // ------ Изменены все три поля (или любая комбинация, не покрытая выше) ------
@@ -191,133 +177,48 @@ if (startChanged && endChanged && deltaChanged) {
     /// Сохранить время начала  newAct.start и дельту newAct.delta, изменить время окончания с newAct.end на (newAct.start + newAct.delta)
     /// Сохранить время окончания  newAct.end и дельту newAct.delta, изменить время начала с newAct.start на (newAct.end - newAct.delta)
     /// Сохранить время начала  newAct.start и время окончания  newAct.end, изменить дельту с newAct.delta на (newAct.end - newAct.start)
+    /// И кнопкой Отмена -> return null;
+    /// применить выбранный вариант и скорректировать границы
 }
 ```
 
-
-
-### Случай 2: перерывы были ненулевыми, но не изменились, active не изменился
-    // Условие: !intChanged && !distChanged && !activeChanged &&
-    //          (oldAct.interruptBreaks !== 0 || oldAct.distractionBreaks !== 0) &&
-    //          newAct.interruptBreaks === oldAct.interruptBreaks &&
-    //          newAct.distractionBreaks === oldAct.distractionBreaks
-
-#### Изменен только start
-
-```java
-        // ------ 1. Изменён только start ------
-        if (startChanged && !endChanged && !deltaChanged) {
-            newAct.end = newAct.start + newAct.delta;
-            if (newAct.end > 1440) {
-                newAct.end = 1440;
-                newAct.start = 1440 - newAct.delta;
-            }
-            newAct.active = newAct.delta - (newAct.interruptBreaks + newAct.distractionBreaks);
-            return newAct;
-        }
-```
-
-
-
-#### Изменён только `end`
+#### Шаг-2: обработка active, interruptBreaks, distractionBreaks
 
 ```javascript
-if (!startChanged && endChanged && !deltaChanged) {
-    if (newAct.end > newAct.start) {
-        newAct.delta = newAct.end - newAct.start;
-        newAct.active = newAct.delta - (newAct.interruptBreaks + newAct.distractionBreaks);
-        return newAct;
-    } else {
-        // Диалог: "Время окончания должно быть больше времени начала. Исправьте значения."
-        // Кнопка: "Вернуться к редактированию" (единственная).
-        // После закрытия диалога сохранение отменяется (возврат null).
-        return null;
-    }
-}
-```
-
-#### Изменён только `delta`
-```java
-if (!startChanged && !endChanged && deltaChanged) {
-    if (newAct.delta > 0) {
-        newAct.end = newAct.start + newAct.delta;
-        if (newAct.end > 1440) {
-            newAct.end = 1440;
-            newAct.start = 1440 - newAct.delta;
-        }
-        newAct.active = newAct.delta - (newAct.interruptBreaks + newAct.distractionBreaks);
-        return newAct;
-    } else {
-        // Диалог: "Дельта должна быть положительной. Исправьте значение."
-        // Кнопка: "Вернуться к редактированию" (единственная).
-        return null;
-    }
-}
-```
-
-
-#### Изменены `start` и `end` (delta не менялась)
-
-```javascript
-// ------ Изменены start и end ------
-if (startChanged && endChanged && !deltaChanged) {
-    newAct.delta = newAct.end - newAct.start;
-    if (newAct.delta > 0) {
-        newAct.active = newAct.delta - (newAct.interruptBreaks + newAct.distractionBreaks);
-        return newAct;
-    } else {
-        // Диалог: "Время окончания должно быть больше времени начала."
-        // Кнопка: "Вернуться к редактированию"
-        return null;
-    }
-}
-```
-
-#### Изменены `start` и `delta` (end не менялся)
-
-```javascript
-// ------ Изменены start и delta ------
-if (startChanged && !endChanged && deltaChanged) {
-    newAct.end = newAct.start + newAct.delta;
-    if (newAct.end > 1440) {
-        newAct.end = 1440;
-        newAct.start = 1440 - newAct.delta;
-    }
     newAct.active = newAct.delta - (newAct.interruptBreaks + newAct.distractionBreaks);
-    return newAct;
-}
-```
-
-### Изменены `delta` и `end` (start не менялся)
-
-```javascript
-// ------ Изменены delta и end ------
-if (!startChanged && endChanged && deltaChanged) {
-    newAct.start = newAct.end - newAct.delta;
-    if (newAct.start < 0) {
-        newAct.start = 0;
-        newAct.end = newAct.delta;
+    if (newAct.active <= 0) {
+        // Диалог: delta меньше суммы interruptBreaks и distractionBreaks
+        // Исправьте данные
+        return null;
     }
-    newAct.active = newAct.delta - (newAct.interruptBreaks + newAct.distractionBreaks);
     return newAct;
-}
-```
-
----
-
-#### Изменены все три поля (`start`, `end`, `delta`)
-
-```javascript
-// ------ Изменены все три поля (или любая комбинация, не покрытая выше) ------
-if (startChanged && endChanged && deltaChanged) {
-    /// Показать диалог с 3-мя вариантами:
-    /// Сохранить время начала  newAct.start и дельту newAct.delta, изменить время окончания с newAct.end на (newAct.start + newAct.delta)
-    /// Сохранить время окончания  newAct.end и дельту newAct.delta, изменить время начала с newAct.start на (newAct.end - newAct.delta)
-    /// Сохранить время начала  newAct.start и время окончания  newAct.end, изменить дельту с newAct.delta на (newAct.end - newAct.start)
-}
 ```
 
 
-
-### Случай 3: пользователь изменил хотя бы одно из полей active, interruptBreaks, distractionBreaks
+### Случай 2: пользователь изменил хотя бы одно из полей active, interruptBreaks, distractionBreaks
     // Условие: (activeChanged || intChanged || distChanged)
+
+```javascript
+    if (activeChanged || intChanged || distChanged) {
+        // --- Шаг 1 ---
+        if (newAct.delta !== newAct.end - newAct.start) {
+            /// Показать диалог с 3-мя вариантами:
+            /// Сохранить время начала = newAct.start и дельту = newAct.delta, изменить время окончания с newAct.end на (newAct.start + newAct.delta)
+            /// Сохранить время окончания = newAct.end и дельту = newAct.delta, изменить время начала с newAct.start на (newAct.end - newAct.delta)
+            /// Сохранить время начала = newAct.start и время окончания = newAct.end, изменить дельту с newAct.delta на (newAct.end - newAct.start)
+            /// И кнопкой Отмена -> return null;
+        }
+        // --- Шаг 2 ---
+        if (newAct.delta !== newAct.active + newAct.interruptBreaks + newAct.distractionBreaks) {
+            /// Показать диалог с вариантами:
+            /// 1. Если newAct.delta - (newAct.interruptBreaks + newAct.distractionBreaks) > 0 
+            ///       Сохранить interruptBreaks = newAct.interruptBreaks и distractionBreaks = newAct.distractionBreaks, изменить active = newAct.delta - (newAct.interruptBreaks + newAct.distractionBreaks)
+            /// 2. Если newAct.delta - (newAct.interruptBreaks + newAct.active) >=0
+            ///       Сохранить interruptBreaks = newAct.interruptBreaks и active = newAct.active, изменить  distractionBreaks = newAct.delta - (newAct.interruptBreaks + newAct.active)
+            /// Если не показываем ни один вариант, то пишем "В параметрах active, interruptBreaks и distractionBreaks находятся неконсистентные данные - исправьте перед сохранением." При этом единственная кнопка на диалоге будет Отмена
+            /// И кнопкой Отмена -> return null;
+        }
+        return newAct;
+    }
+
+```
