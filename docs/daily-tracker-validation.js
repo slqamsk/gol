@@ -13,7 +13,7 @@ validationModal.onclick = (e) => {
 };
 
 // Утилита показа диалога с вариантами
-function showValidationDialog(title, message, options, onChoice) {
+function showValidationDialog(title, message, options) {
     return new Promise((resolve) => {
         validationTitle.textContent = title;
         validationMessage.textContent = message;
@@ -48,8 +48,7 @@ async function validateAndFix(oldAct, newAct) {
         await showValidationDialog(
             'Некорректные значения',
             'Время начала, конца, дельта или перерывы выходят за допустимые пределы (0–1440 минут).',
-            [{ label: 'Вернуться к редактированию', value: null, primary: false }],
-            () => {}
+            [{ label: 'Вернуться к редактированию', value: null, primary: false }]
         );
         return null;
     }
@@ -157,9 +156,8 @@ async function validateAndFix(oldAct, newAct) {
                 newAct.end = newAct.delta;
             }
         }
-        // 1.7 Изменены все три поля (или любая иная комбинация, не покрытая выше)
-        else if ((startChanged && endChanged && deltaChanged) ||
-                 (startChanged && !endChanged && !deltaChanged && activeChanged) /* запасной */) {
+        // 1.7 Изменены все три поля
+        else if (startChanged && endChanged && deltaChanged) {
             const options = [];
             if (newAct.start + newAct.delta <= 1440) {
                 options.push({ label: `Сохранить начало ${formatMinutesToTime(newAct.start)} и дельту ${newAct.delta} мин, изменить конец на ${formatMinutesToTime(newAct.start + newAct.delta)}`, value: 'fixEnd' });
