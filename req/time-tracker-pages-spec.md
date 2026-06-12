@@ -17,7 +17,7 @@
 
 **FR.01.01.05.** Оформление обеих страниц – светлое, без переключения тем.
 
-**FR.01.01.06.** Вёрстка рассчитана на большой экран с фиксированной шириной контента - 2560px. При нехватке места в окне браузера появляются горизонтальная и вертикальная полосы прокрутки у всей страницы. Запрещается использование медиа-запросов.
+**FR.01.01.06.** Вёрстка рассчитана на разрешение экрана 2560px по ширине. При нехватке места в окне браузера появляются горизонтальная и вертикальная полосы прокрутки у всей страницы. Запрещается использование медиа-запросов.
 
 **FR.01.01.07.** Прототип не выполняет автоматическую миграцию данных из предыдущих версий. При загрузке невалидных данных пользователь получает сообщение об ошибке и может исправить их вручную через редактор JSON на странице импорта/экспорта.
 
@@ -133,6 +133,7 @@
 ### 03.05. Выбор цвета через палитру
 
 **FR.03.05.01.** Модальное окно содержит сгруппированную таблицу стандартных именованных цветов CSS (английское имя, русское название). Каждая строка имеет фон, соответствующий цвету.
+Палитра содержит только стандартные именованные цвета CSS (например, DarkOrchid, Peru). Это позволяет при ручном редактировании JSON (на странице импорта/экспорта или в любом текстовом редакторе) быстро идентифицировать цвет по его английскому имени, не прибегая к справочнику HEX-кодов. HEX-коды не используются, так как снижают читаемость JSON и усложняют ручную правку.
 
 **FR.03.05.02.** При клике на строку палитры:
 - **FR.03.05.02.01.** Выбранное английское имя цвета сохраняется:
@@ -169,7 +170,7 @@
 
 ### 03.07. Технические замечания (специфичные для редактора)
 
-**FR.03.07.01.** Палитра использует только стандартные именованные цвета CSS. В JSON сохраняется именно английское имя цвета (например, `"DarkOrchid"`).
+**FR.03.07.01.** Палитра использует только стандартные именованные цвета CSS. В JSON сохраняется именно английское имя цвета (например, `"DarkOrchid"`), HEX не допускаются.
 
 **FR.03.07.02.** Код страницы **не должен** изменять массивы `activity_types` и объект `_service_context` – они остаются нетронутыми.
 
@@ -440,82 +441,8 @@
 
 
 ## Раздел 7.3. Правила валидации значений перед сохранением активности
+См. файл time-tracker-pages-spec-7-3.md
 
-### 1. Пример использования
-
-```javascript
-// В обработчике сохранения активности (например, saveActivity в daily-tracker-editor.js)
-async function saveActivity() {
-    // Собираем данные формы в объект newAct
-    const newAct = {
-        id: currentEditingId || null,
-        activityTypeId: parseInt(actAction.value),
-        start: timeStrToMinutes(actStart.value),
-        end: timeStrToMinutes(actEnd.value),
-        delta: parseInt(actDelta.value),
-        active: parseInt(actActive.value),
-        interruptBreaks: parseInt(actIntBreaks.value),
-        distractionBreaks: parseInt(actDistBreaks.value),
-        comment: actComment.value,
-        status: document.querySelector('.status-btn.active').dataset.status
-    };
-    
-    // Старая активность (null для новой)
-    const oldAct = currentEditingId ? currentActivities.find(a => a.id === currentEditingId) : null;
-    
-    // Валидация
-    const result = await validateAndFix(oldAct, newAct);
-    if (result === null) {
-        // Пользователь отменил сохранение (нажал «Вернуться к редактированию»)
-        return;
-    }
-    // result — это скорректированный newAct (возможно, с изменёнными полями)
-    // Сохраняем result в localStorage и перерисовываем интерфейс
-    // ...
-}
-```
-
-### 2. Оболочка функции
-
-```javascript
-/**
- * Валидация активности перед сохранением.
- * @param {Object|null} old — старая активность (null для новой)
- * @param {Object} new — новые значения (поля start, end, delta, active, interruptBreaks, distractionBreaks)
- * @returns {Promise<Object|null>} — возвращает скорректированный newAct или null при отмене
- */
-async function validateAndFix(old, new) {
-
-    // Временно оставляем валидацию только для редактирования существующей активности
-    if (old === null) {
-        return new;
-    }
-    
-
-    // 1. Проверка двух обязательных условий
-    const timeRuleOk = (new.delta === newAct.end - new.start);
-    const compositionRuleOk = (new.delta === new.active + new.interruptBreaks + new.distractionBreaks);
-    
-    // 2. Если оба правила соблюдены — возвращаем newAct без изменений
-    if (timeRuleOk && compositionRuleOk) {
-        return new;
-    }
-    
-    // 3. Определяем, какие поля были изменены (если есть old)
-    const startChanged = (old !== null) ? (old.start !== newAct.start) : true;
-    const endChanged   = (old !== null) ? (old.end !== newAct.end) : true;
-    const deltaChanged = (old !== null) ? (old.delta !== newAct.delta) : true;
-    const activeChanged = (old !== null) ? (old.active !== newAct.active) : true;
-    const intChanged   = (old !== null) ? (old.interruptBreaks !== newAct.interruptBreaks) : true;
-    const distChanged  = (old !== null) ? (old.distractionBreaks !== newAct.distractionBreaks) : true;
-    
-    // 4. Разветвление по случаям (будет добавлена полная логика из таблиц решений)
-    //    Случай 1, Случай 2, Случай 3
-    
-    // Если ни один случай не применился (защита от ошибок), возвращаем newAct
-    return newAct;
-}
-```
 
 ---
 
@@ -640,3 +567,11 @@ async function validateAndFix(old, new) {
 ### Заключение
 
 Введение трёх типов пересечений (`undefined`, `interrupt`, `parallel`) позволяет гибко обрабатывать различные сценарии наложения активностей во времени. Единый корень `overlap` во всех названиях подчёркивает их принадлежность к одной категории, а конкретные приставки указывают на характер пересечения. Это упрощает как реализацию на уровне кода, так и понимание для конечного пользователя.
+
+
+## 12. Разные доработки
+### 12.1. Валидация правила состава при импорте
+В текущей версии при импорте расписаний через import-export.html проверка delta === active + interruptBreaks + distractionBreaks не выполняется. В следующих версиях необходимо добавить эту проверку. При нарушении показывать пользователю диалог с вариантами автоматического исправления (аналогично разделу 7.3), либо подсвечивать проблемные активности и предлагать ручную правку.
+
+### 12.2. Рефакторинг: вынос общих утилит
+Функции showStatus, formatMinutesToTime, timeStrToMinutes, getCurrentDateTimeString, getContrastColor и другие, используемые на нескольких страницах, должны быть вынесены в отдельный модуль utils.js. Этот модуль подключается на всех страницах вместо дублирования кода в daily-tracker-core.js и import-export.js.
