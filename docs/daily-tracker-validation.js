@@ -1,89 +1,279 @@
 // daily-tracker-validation.js
 // Правила валидации и диалоги исправления (раздел 7.3)
 
-// Модальное окно валидации
 const validationModal = document.getElementById('validation-modal');
 const validationTitle = document.getElementById('validation-title');
 const validationMessage = document.getElementById('validation-message');
 const validationOptions = document.getElementById('validation-options');
 const validationCancel = document.getElementById('validation-cancel');
 
-// Закрытие модального окна по клику на фон (назначается один раз)
+// Закрытие модального окна по клику на фон
 validationModal.onclick = (e) => {
     if (e.target === validationModal) validationModal.classList.remove('active');
 };
 
+// Утилита показа диалога с вариантами
+function showValidationDialog(title, message, options, onChoice) {
+    return new Promise((resolve) => {
+        validationTitle.textContent = title;
+        validationMessage.textContent = message;
+        validationOptions.innerHTML = '';
+        options.forEach(opt => {
+            const btn = document.createElement('div');
+            btn.className = `validation-option${opt.primary ? ' primary' : ''}`;
+            btn.textContent = opt.label;
+            btn.onclick = () => {
+                validationModal.classList.remove('active');
+                resolve(opt.value);
+            };
+            validationOptions.appendChild(btn);
+        });
+        validationCancel.onclick = () => {
+            validationModal.classList.remove('active');
+            resolve(null);
+        };
+        validationModal.classList.add('active');
+    });
+}
+
 // Основная функция валидации
-// Принимает объект draft (с полями start, end, delta, active, interruptBreaks, distractionBreaks)
-// Возвращает Promise<boolean> – true, если данные корректны (или успешно исправлены), false – если пользователь отменил.
-// При необходимости модифицирует переданный draft.
-async function validateAndFix(draft) {
-    // Проверка правила времени
-    let deltaCalc = draft.end - draft.start;
-    if (deltaCalc !== draft.delta) {
-        return new Promise((resolve) => {
-            validationTitle.textContent = 'Несоответствие времени';
-            validationMessage.textContent = `Дельта (${draft.delta}) не равна разнице end - start (${deltaCalc}). Выберите действие:`;
-            validationOptions.innerHTML = `
-                <div class="validation-option primary" data-choice="time1">Исправить дельту: установить delta = ${deltaCalc}</div>
-                <div class="validation-option" data-choice="time2">Исправить end: установить end = ${formatMinutesToTime(draft.start + draft.delta)}</div>
-                <div class="validation-option" data-choice="time3">Исправить start: установить start = ${formatMinutesToTime(draft.end - draft.delta)}</div>
-            `;
-            validationModal.classList.add('active');
-            const handler = (e) => {
-                const choice = e.target.dataset.choice;
-                if (choice === 'time1') {
-                    draft.delta = deltaCalc;
-                } else if (choice === 'time2') {
-                    draft.end = draft.start + draft.delta;
-                } else if (choice === 'time3') {
-                    draft.start = draft.end - draft.delta;
-                }
-                validationModal.classList.remove('active');
-                validationOptions.innerHTML = '';
-                resolve(true);
-            };
-            validationOptions.querySelectorAll('.validation-option').forEach(opt => opt.addEventListener('click', handler, { once: true }));
-            validationCancel.onclick = () => {
-                validationModal.classList.remove('active');
-                resolve(false);
-            };
-        });
+async function validateAndFix(oldAct, newAct) {
+    // 1. Проверка границ
+    if (newAct.start < 0 || newAct.start > 1440 ||
+        newAct.end < 0 || newAct.end > 1440 ||
+        newAct.delta < 0 || newAct.delta > 1440 ||
+        newAct.active < 0 || newAct.active > 1440 ||
+        newAct.interruptBreaks < 0 || newAct.interruptBreaks > 1440 ||
+        newAct.distractionBreaks < 0 || newAct.distractionBreaks > 1440) {
+        await showValidationDialog(
+            'Некорректные значения',
+            'Время начала, конца, дельта или перерывы выходят за допустимые пределы (0–1440 минут).',
+            [{ label: 'Вернуться к редактированию', value: null, primary: false }],
+            () => {}
+        );
+        return null;
     }
-    // Проверка правила состава
-    let sumBreaks = draft.active + draft.interruptBreaks + draft.distractionBreaks;
-    if (sumBreaks !== draft.delta) {
-        return new Promise((resolve) => {
-            validationTitle.textContent = 'Несоответствие состава';
-            validationMessage.textContent = `Сумма активного времени и перерывов (${sumBreaks}) не равна дельте (${draft.delta}). Выберите действие:`;
-            validationOptions.innerHTML = `
-                <div class="validation-option primary" data-choice="sum1">Исправить дельту: установить delta = ${sumBreaks}</div>
-                <div class="validation-option" data-choice="sum2">Исправить активное время: установить active = ${draft.delta - draft.interruptBreaks - draft.distractionBreaks}</div>
-                <div class="validation-option" data-choice="sum3">Исправить перерывы из-за прерываний: установить interruptBreaks = ${draft.delta - draft.active - draft.distractionBreaks}</div>
-                <div class="validation-option" data-choice="sum4">Исправить перерывы из-за отвлечений: установить distractionBreaks = ${draft.delta - draft.active - draft.interruptBreaks}</div>
-            `;
-            validationModal.classList.add('active');
-            const handler = (e) => {
-                const choice = e.target.dataset.choice;
-                if (choice === 'sum1') {
-                    draft.delta = sumBreaks;
-                } else if (choice === 'sum2') {
-                    draft.active = draft.delta - draft.interruptBreaks - draft.distractionBreaks;
-                } else if (choice === 'sum3') {
-                    draft.interruptBreaks = draft.delta - draft.active - draft.distractionBreaks;
-                } else if (choice === 'sum4') {
-                    draft.distractionBreaks = draft.delta - draft.active - draft.interruptBreaks;
-                }
-                validationModal.classList.remove('active');
-                validationOptions.innerHTML = '';
-                resolve(true);
-            };
-            validationOptions.querySelectorAll('.validation-option').forEach(opt => opt.addEventListener('click', handler, { once: true }));
-            validationCancel.onclick = () => {
-                validationModal.classList.remove('active');
-                resolve(false);
-            };
-        });
+
+    // 2. Определяем изменённые поля
+    const startChanged = oldAct === null ? true : oldAct.start !== newAct.start;
+    const endChanged   = oldAct === null ? true : oldAct.end !== newAct.end;
+    const deltaChanged = oldAct === null ? true : oldAct.delta !== newAct.delta;
+    const activeChanged = oldAct === null ? true : oldAct.active !== newAct.active;
+    const intChanged   = oldAct === null ? true : oldAct.interruptBreaks !== newAct.interruptBreaks;
+    const distChanged  = oldAct === null ? true : oldAct.distractionBreaks !== newAct.distractionBreaks;
+
+    // 3. Проверка правил времени и состава
+    const timeRuleOk = (newAct.delta === newAct.end - newAct.start);
+    const compositionRuleOk = (newAct.delta === newAct.active + newAct.interruptBreaks + newAct.distractionBreaks);
+
+    if (timeRuleOk && compositionRuleOk && newAct.active > 0) {
+        return newAct; // всё корректно
     }
-    return true;
+
+    // ------------------- Случай 1: перерывы и active не менялись -------------------
+    if (!intChanged && !distChanged && !activeChanged) {
+        // Шаг 1: коррекция start/end/delta
+        // 1.1 Изменён только start
+        if (startChanged && !endChanged && !deltaChanged) {
+            newAct.end = newAct.start + newAct.delta;
+            if (newAct.end > 1440) {
+                newAct.end = 1440;
+                newAct.start = 1440 - newAct.delta;
+            }
+        }
+        // 1.2 Изменён только end
+        else if (!startChanged && endChanged && !deltaChanged) {
+            if (newAct.end <= newAct.start) {
+                // диалог с двумя вариантами
+                const choice = await showValidationDialog(
+                    'Некорректное время окончания',
+                    `Время окончания (${formatMinutesToTime(newAct.end)}) не может быть меньше или равно времени начала (${formatMinutesToTime(newAct.start)}). Выберите действие:`,
+                    [
+                        { label: `Сохранить дельту ${newAct.delta} мин, изменить начало на ${formatMinutesToTime(newAct.end - newAct.delta)}`, value: 'shiftStart' },
+                        { label: `Сохранить начало ${formatMinutesToTime(newAct.start)}, изменить дельту на ${newAct.end - newAct.start} мин`, value: 'fixDelta' }
+                    ]
+                );
+                if (choice === null) return null;
+                if (choice === 'shiftStart') {
+                    newAct.start = newAct.end - newAct.delta;
+                    if (newAct.start < 0) {
+                        newAct.start = 0;
+                        newAct.end = newAct.delta;
+                    }
+                } else if (choice === 'fixDelta') {
+                    newAct.delta = newAct.end - newAct.start;
+                }
+            } else {
+                // end > start – просто сохраняем как есть
+            }
+            // проверка выхода за границы
+            if (newAct.start < 0) {
+                newAct.start = 0;
+                newAct.end = newAct.delta;
+            }
+        }
+        // 1.3 Изменена только дельта
+        else if (!startChanged && !endChanged && deltaChanged) {
+            if (newAct.delta > 0) {
+                newAct.end = newAct.start + newAct.delta;
+                if (newAct.end > 1440) {
+                    newAct.end = 1440;
+                    newAct.start = 1440 - newAct.delta;
+                }
+            } else {
+                await showValidationDialog(
+                    'Ошибка',
+                    'Дельта должна быть положительной. Исправьте значение.',
+                    [{ label: 'Вернуться к редактированию', value: null }]
+                );
+                return null;
+            }
+        }
+        // 1.4 Изменены start и end (delta не менялась)
+        else if (startChanged && endChanged && !deltaChanged) {
+            newAct.delta = newAct.end - newAct.start;
+            if (newAct.delta <= 0) {
+                await showValidationDialog(
+                    'Ошибка',
+                    'Время окончания должно быть больше времени начала.',
+                    [{ label: 'Вернуться к редактированию', value: null }]
+                );
+                return null;
+            }
+        }
+        // 1.5 Изменены start и delta (end не менялся)
+        else if (startChanged && !endChanged && deltaChanged) {
+            newAct.end = newAct.start + newAct.delta;
+            if (newAct.end > 1440) {
+                newAct.end = 1440;
+                newAct.start = 1440 - newAct.delta;
+            }
+        }
+        // 1.6 Изменены delta и end (start не менялся)
+        else if (!startChanged && endChanged && deltaChanged) {
+            newAct.start = newAct.end - newAct.delta;
+            if (newAct.start < 0) {
+                newAct.start = 0;
+                newAct.end = newAct.delta;
+            }
+        }
+        // 1.7 Изменены все три поля (или любая иная комбинация, не покрытая выше)
+        else if ((startChanged && endChanged && deltaChanged) ||
+                 (startChanged && !endChanged && !deltaChanged && activeChanged) /* запасной */) {
+            const options = [];
+            if (newAct.start + newAct.delta <= 1440) {
+                options.push({ label: `Сохранить начало ${formatMinutesToTime(newAct.start)} и дельту ${newAct.delta} мин, изменить конец на ${formatMinutesToTime(newAct.start + newAct.delta)}`, value: 'fixEnd' });
+            }
+            if (newAct.end - newAct.delta >= 0) {
+                options.push({ label: `Сохранить конец ${formatMinutesToTime(newAct.end)} и дельту ${newAct.delta} мин, изменить начало на ${formatMinutesToTime(newAct.end - newAct.delta)}`, value: 'fixStart' });
+            }
+            if (newAct.end - newAct.start > 0) {
+                options.push({ label: `Сохранить начало ${formatMinutesToTime(newAct.start)} и конец ${formatMinutesToTime(newAct.end)}, изменить дельту на ${newAct.end - newAct.start} мин`, value: 'fixDelta' });
+            }
+            if (options.length === 0) {
+                await showValidationDialog(
+                    'Неконсистентные данные',
+                    `Введённая комбинация (начало=${formatMinutesToTime(newAct.start)}, конец=${formatMinutesToTime(newAct.end)}, дельта=${newAct.delta}) не позволяет согласовать время.`,
+                    [{ label: 'Вернуться к редактированию', value: null }]
+                );
+                return null;
+            }
+            const choice = await showValidationDialog('Выберите способ коррекции', 'Время начала, конца и дельты противоречат друг другу.', options);
+            if (choice === null) return null;
+            if (choice === 'fixEnd') {
+                newAct.end = newAct.start + newAct.delta;
+            } else if (choice === 'fixStart') {
+                newAct.start = newAct.end - newAct.delta;
+            } else if (choice === 'fixDelta') {
+                newAct.delta = newAct.end - newAct.start;
+            }
+        }
+
+        // Шаг 2: пересчёт активного времени
+        newAct.active = newAct.delta - (newAct.interruptBreaks + newAct.distractionBreaks);
+        if (newAct.active <= 0) {
+            await showValidationDialog(
+                'Некорректное активное время',
+                `Дельта (${newAct.delta}) меньше суммы перерывов (${newAct.interruptBreaks + newAct.distractionBreaks}). Активное время не может быть ≤ 0. Исправьте данные.`,
+                [{ label: 'Вернуться к редактированию', value: null }]
+            );
+            return null;
+        }
+        return newAct;
+    }
+
+    // ------------------- Случай 2: изменено хотя бы одно из active, interruptBreaks, distractionBreaks -------------------
+    else {
+        // Шаг 1: если delta не совпадает с end-start
+        if (newAct.delta !== newAct.end - newAct.start) {
+            const options = [];
+            if (newAct.start + newAct.delta <= 1440) {
+                options.push({ label: `Сохранить начало ${formatMinutesToTime(newAct.start)} и дельту ${newAct.delta} мин, изменить конец на ${formatMinutesToTime(newAct.start + newAct.delta)}`, value: 'fixEnd' });
+            }
+            if (newAct.end - newAct.delta >= 0) {
+                options.push({ label: `Сохранить конец ${formatMinutesToTime(newAct.end)} и дельту ${newAct.delta} мин, изменить начало на ${formatMinutesToTime(newAct.end - newAct.delta)}`, value: 'fixStart' });
+            }
+            if (newAct.end - newAct.start > 0) {
+                options.push({ label: `Сохранить начало ${formatMinutesToTime(newAct.start)} и конец ${formatMinutesToTime(newAct.end)}, изменить дельту на ${newAct.end - newAct.start} мин`, value: 'fixDelta' });
+            }
+            if (options.length === 0) {
+                await showValidationDialog(
+                    'Неконсистентные данные',
+                    `Введённая комбинация (начало=${formatMinutesToTime(newAct.start)}, конец=${formatMinutesToTime(newAct.end)}, дельта=${newAct.delta}) не позволяет согласовать время.`,
+                    [{ label: 'Вернуться к редактированию', value: null }]
+                );
+                return null;
+            }
+            const choice = await showValidationDialog('Выберите способ коррекции времени', 'Время начала, конца и дельты противоречат друг другу.', options);
+            if (choice === null) return null;
+            if (choice === 'fixEnd') {
+                newAct.end = newAct.start + newAct.delta;
+            } else if (choice === 'fixStart') {
+                newAct.start = newAct.end - newAct.delta;
+            } else if (choice === 'fixDelta') {
+                newAct.delta = newAct.end - newAct.start;
+            }
+        }
+
+        // Шаг 2: если delta не совпадает с суммой active + перерывы
+        if (newAct.delta !== newAct.active + newAct.interruptBreaks + newAct.distractionBreaks) {
+            const options = [];
+            // Вариант 1: изменить active
+            const newActive = newAct.delta - (newAct.interruptBreaks + newAct.distractionBreaks);
+            if (newActive > 0) {
+                options.push({ label: `Сохранить перерывы, изменить активное время на ${newActive} мин`, value: 'fixActive' });
+            }
+            // Вариант 2: изменить distractionBreaks
+            const newDist = newAct.delta - (newAct.interruptBreaks + newAct.active);
+            if (newDist >= 0 && newAct.active > 0) {
+                options.push({ label: `Сохранить прерывания и активное время, изменить отвлечения на ${newDist} мин`, value: 'fixDist' });
+            }
+            if (options.length === 0) {
+                await showValidationDialog(
+                    'Неконсистентные перерывы',
+                    'Сумма активного времени и перерывов не равна дельте, и нет возможности автоматически исправить (active ≤ 0 или отрицательные перерывы). Исправьте вручную.',
+                    [{ label: 'Вернуться к редактированию', value: null }]
+                );
+                return null;
+            }
+            const choice = await showValidationDialog('Выберите способ коррекции', 'Дельта не равна сумме активного времени и перерывов.', options);
+            if (choice === null) return null;
+            if (choice === 'fixActive') {
+                newAct.active = newAct.delta - (newAct.interruptBreaks + newAct.distractionBreaks);
+            } else if (choice === 'fixDist') {
+                newAct.distractionBreaks = newAct.delta - (newAct.interruptBreaks + newAct.active);
+            }
+        }
+
+        // Финальная проверка active > 0
+        if (newAct.active <= 0) {
+            await showValidationDialog(
+                'Ошибка',
+                'Активное время должно быть больше нуля. Исправьте данные.',
+                [{ label: 'Вернуться к редактированию', value: null }]
+            );
+            return null;
+        }
+        return newAct;
+    }
 }
