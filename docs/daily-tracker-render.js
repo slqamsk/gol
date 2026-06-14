@@ -79,9 +79,25 @@ function renderActivities() {
             <span class="block-name">${name}</span>
         </div>${commentHtml}`;
         block.dataset.id = act.id;
-        block.ondblclick = () => {
+        block.ondblclick = (e) => {
+            if (dragState && dragState.active) {
+                e.preventDefault();
+                return;
+            }
             if (window.openEditModal) openEditModal(act);
         };
+
+        // Drag & Drop
+        if (act.status !== 'done') {
+            block.addEventListener('mousedown', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                const startY = e.clientY;
+                if (window.startDrag) {
+                    window.startDrag(act, block, startY);
+                }
+            });
+        }
         blocksContainer.appendChild(block);
     }
 }

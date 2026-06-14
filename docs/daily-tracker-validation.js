@@ -275,3 +275,4 @@ async function validateAndFix(oldAct, newAct) {
         return newAct;
     }
 }
+window.validateAndFix = validateAndFix;

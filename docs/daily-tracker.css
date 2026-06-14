@@ -431,3 +431,12 @@ body {
 .validation-option:hover {
     background: #e2e8f0;
 }
+
+/* daily-tracker.css - добавим класс для плавности при возврате (опционально) */
+.activity-block {
+    transition: transform 0.05s linear; /* для очень плавного движения, можно убрать, если мешает */
+}
+/* при активном перетаскивании убираем переход, чтобы мгновенно следовать за курсором */
+.activity-block.dragging {
+    transition: none;
+}

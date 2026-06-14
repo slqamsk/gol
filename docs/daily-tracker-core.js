@@ -67,3 +67,150 @@ function getCurrentDateTimeString() {
     // toISOString возвращает UTC, но мы уже сдвинули время, и заменяем Z на +03:00
     return mskTime.toISOString().replace('Z', '+03:00');
 }
+
+// ==================== Drag and Drop State ====================
+let dragState = {
+    active: false,
+    originalStart: 0,
+    originalEnd: 0,
+    originalDelta: 0,
+    originalActivity: null,
+    startClientY: 0,
+    element: null,
+    activityId: null,
+    cancelFlag: false
+};
+
+function startDrag(activity, element, clientY) {
+    if (dragState.active) return;
+    dragState.active = true;
+    dragState.originalStart = activity.start;
+    dragState.originalEnd = activity.end;
+    dragState.originalDelta = activity.delta;
+    dragState.originalActivity = { ...activity };
+    dragState.startClientY = clientY;
+    dragState.element = element;
+    dragState.activityId = activity.id;
+    dragState.cancelFlag = false;
+
+    element.style.transition = 'none';
+    element.style.willChange = 'transform';
+    document.body.style.userSelect = 'none';
+
+    window.addEventListener('mousemove', onGlobalMouseMove);
+    window.addEventListener('mouseup', onGlobalMouseUp);
+    window.addEventListener('keydown', onGlobalKeyDown);
+}
+
+function onGlobalMouseMove(e) {
+    if (!dragState.active) return;
+    e.preventDefault();
+
+    const deltaY = e.clientY - dragState.startClientY;
+    let newStart = dragState.originalStart + deltaY;
+    let newEnd = dragState.originalEnd + deltaY;
+
+    if (newStart < 0) {
+        newStart = 0;
+        newEnd = dragState.originalDelta;
+    }
+    if (newEnd > 1440) {
+        newEnd = 1440;
+        newStart = 1440 - dragState.originalDelta;
+    }
+    if (newStart < 0) newStart = 0;
+    if (newEnd > 1440) newEnd = 1440;
+
+    const actualDeltaMinutes = newStart - dragState.originalStart;
+    if (dragState.element) {
+        dragState.element.style.transform = `translateY(${actualDeltaMinutes}px)`;
+    }
+    dragState.tempStart = newStart;
+    dragState.tempEnd = newEnd;
+}
+
+function onGlobalMouseUp(e) {
+    if (!dragState.active) return;
+    const isInsideTracker = e.target.closest ? e.target.closest('#timeline-wrapper') : false;
+    if (!isInsideTracker) {
+        dragState.cancelFlag = true;
+    }
+    endDrag();
+}
+
+function onGlobalKeyDown(e) {
+    if (!dragState.active) return;
+    if (e.key === 'Escape') {
+        dragState.cancelFlag = true;
+        endDrag();
+    }
+}
+
+async function endDrag() {
+    if (!dragState.active) return;
+
+    window.removeEventListener('mousemove', onGlobalMouseMove);
+    window.removeEventListener('mouseup', onGlobalMouseUp);
+    window.removeEventListener('keydown', onGlobalKeyDown);
+    document.body.style.userSelect = '';
+
+    const element = dragState.element;
+    const cancel = dragState.cancelFlag;
+    const originalAct = dragState.originalActivity;
+    const newStart = dragState.tempStart;
+    const newEnd = dragState.tempEnd;
+
+    if (element) {
+        element.style.transform = '';
+        element.style.transition = '';
+        element.style.willChange = '';
+    }
+
+    if (cancel || newStart === undefined || newStart === null) {
+        dragState.active = false;
+        dragState = { active: false, originalStart: 0, originalEnd: 0, originalDelta: 0, originalActivity: null, startClientY: 0, element: null, activityId: null, cancelFlag: false };
+        return;
+    }
+
+    if (newStart === originalAct.start) {
+        dragState.active = false;
+        dragState = { active: false, originalStart: 0, originalEnd: 0, originalDelta: 0, originalActivity: null, startClientY: 0, element: null, activityId: null, cancelFlag: false };
+        return;
+    }
+
+    const newActivity = {
+        ...originalAct,
+        start: newStart,
+        end: newEnd
+    };
+
+    const fixedActivity = await validateAndFix(originalAct, newActivity);
+    if (fixedActivity === null) {
+        openEditModal(originalAct);
+        dragState.active = false;
+        dragState = { active: false, originalStart: 0, originalEnd: 0, originalDelta: 0, originalActivity: null, startClientY: 0, element: null, activityId: null, cancelFlag: false };
+        return;
+    }
+
+    const dayEntry = ensureScheduleExists(currentDate);
+    const activities = dayEntry.schedule.activities;
+    const index = activities.findIndex(a => a.id === fixedActivity.id);
+    if (index !== -1) {
+        activities[index] = fixedActivity;
+    } else {
+        fixedActivity.id = getNextIdForDay();
+        activities.push(fixedActivity);
+    }
+    activities.sort((a,b) => a.start - b.start);
+    currentActivities = activities;
+    updateScheduleCurrentDateTime(currentDate);
+    saveToLocalStorage();
+    renderActivities();
+
+    dragState.active = false;
+    dragState = { active: false, originalStart: 0, originalEnd: 0, originalDelta: 0, originalActivity: null, startClientY: 0, element: null, activityId: null, cancelFlag: false };
+}
+
+// делаем функции глобально доступными
+window.startDrag = startDrag;
+window.validateAndFix = validateAndFix; // если её ещё нет в глобальной области
