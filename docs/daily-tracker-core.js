@@ -95,6 +95,11 @@ function startDrag(activity, element, clientY) {
 
     element.style.transition = 'none';
     element.style.willChange = 'transform';
+
+    element.style.cursor = 'grabbing';
+    element.style.zIndex = '1000';
+    document.body.style.cursor = 'grabbing';
+
     document.body.style.userSelect = 'none';
 
     window.addEventListener('mousemove', onGlobalMouseMove);
@@ -165,6 +170,13 @@ async function endDrag() {
         element.style.transition = '';
         element.style.willChange = '';
     }
+
+    if (element) {
+        element.style.cursor = '';
+        element.style.zIndex = '';
+    }
+    document.body.style.cursor = '';
+
 
     if (cancel || newStart === undefined || newStart === null) {
         dragState.active = false;

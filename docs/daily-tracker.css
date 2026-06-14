@@ -15,7 +15,7 @@ body {
 }
 
 .tracker-container {
-    max-width: 2560px;
+    width: 2560px;
     margin: 0 auto;
     background: #ffffff;
     min-height: 100vh;
