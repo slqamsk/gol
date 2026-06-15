@@ -263,4 +263,3 @@ function updateBalanceDisplay() {
 
 // делаем функции глобально доступными
 window.startDrag = startDrag;
-window.validateAndFix = validateAndFix; // если её ещё нет в глобальной области
