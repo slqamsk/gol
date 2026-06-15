@@ -223,6 +223,44 @@ async function endDrag() {
     dragState = { active: false, originalStart: 0, originalEnd: 0, originalDelta: 0, originalActivity: null, startClientY: 0, element: null, activityId: null, cancelFlag: false };
 }
 
+// Получить rate для активности по её activityTypeId
+function getRateForActivityType(activityTypeId) {
+    const act = categoriesData.activity_types.find(a => a.id === activityTypeId);
+    if (!act) return 0;
+    const cat = categoriesData.categories.find(c => c.id === act.category_id);
+    if (!cat) return 0;
+    const rank = categoriesData.ranks.find(r => r.id === cat.rank_id);
+    return rank ? rank.rate : 0;
+}
+
+// Вычислить плановый и фактический баланс для массива активностей
+function computeBalances(activities) {
+    let planned = 0, fact = 0;
+    for (const act of activities) {
+        const rate = getRateForActivityType(act.activityTypeId);
+        const hours = act.active / 60;
+        const value = Math.trunc(hours * rate);
+        planned += value;
+        if (act.status === 'done') fact += value;
+    }
+    return { planned, fact };
+}
+
+// Обновить отображение баланса на основе currentActivities
+function updateBalanceDisplay() {
+    const plannedSpan = document.getElementById('planned-balance');
+    const factSpan = document.getElementById('fact-balance');
+    if (!plannedSpan || !factSpan) return;
+    if (!currentActivities || currentActivities.length === 0) {
+        plannedSpan.textContent = 'План: 0 руб';
+        factSpan.textContent = 'Факт: 0 руб';
+        return;
+    }
+    const { planned, fact } = computeBalances(currentActivities);
+    plannedSpan.textContent = `План: ${planned} руб`;
+    factSpan.textContent = `Факт: ${fact} руб`;
+}
+
 // делаем функции глобально доступными
 window.startDrag = startDrag;
 window.validateAndFix = validateAndFix; // если её ещё нет в глобальной области

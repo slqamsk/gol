@@ -100,6 +100,7 @@ function renderActivities() {
         }
         blocksContainer.appendChild(block);
     }
+    updateBalanceDisplay();
 }
 
 function renderTimelineTicks() {
