@@ -13,7 +13,9 @@
         <div class="brand">📅 Daily Tracker</div>
         <div class="date-controls">
             <button id="select-day-btn" class="btn">Выбрать день</button>
+            <button id="prev-day-btn" class="btn nav-btn">‹</button>
             <button id="today-btn" class="btn btn-primary">Сегодня</button>
+            <button id="next-day-btn" class="btn nav-btn">›</button>
             <button id="add-activity-btn" class="btn btn-primary">+ Добавить</button>
         </div>
         <div id="current-date-display" class="current-date"></div>
@@ -130,6 +132,17 @@
         <p id="validation-message"></p>
         <div id="validation-options" class="validation-options"></div>
         <button id="validation-cancel" class="btn">Отменить сохранение и вернуться к редактированию</button>
+    </div>
+</div>
+
+<!-- Модальное окно подтверждения создания расписания -->
+<div id="confirm-create-modal" class="modal-overlay">
+    <div class="modal-content">
+        <p id="confirm-create-message"></p>
+        <div class="modal-buttons">
+            <button id="confirm-create-yes" class="btn btn-primary">Создать</button>
+            <button id="confirm-create-no" class="btn">Вернуться</button>
+        </div>
     </div>
 </div>
 

@@ -465,3 +465,17 @@ body {
     background: #4b5563;
 }
 
+.nav-btn {
+    font-size: 1.2rem;
+    padding: 0 12px;
+    line-height: 1.4;
+    font-weight: 700;
+    background: #f1f5f9;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.nav-btn:hover {
+    background: #e2e8f0;
+}
