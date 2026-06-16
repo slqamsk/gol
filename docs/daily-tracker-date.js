@@ -14,6 +14,8 @@ function loadScheduleForDate(date) {
     currentDate = date;
     currentDateDisplay.textContent = date;
     
+    updateUrlWithDate(date);
+
     // Убедиться, что расписание существует (создать пустое при необходимости)
     const entry = ensureScheduleExists(date);
     

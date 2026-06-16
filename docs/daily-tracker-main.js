@@ -8,8 +8,7 @@ function init() {
     renderTimelineTicks();
     initEditor();
 
-    const today = getCurrentDateTimeString().slice(0, 10);
-    loadScheduleForDate(today);
+    loadScheduleForDate(getWorkDate());
 
     // Обновление линии времени каждую минуту
     setInterval(() => {

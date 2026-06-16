@@ -282,6 +282,23 @@ function updateBalanceDisplay() {
     factSpan.textContent = `Факт: ${fact} руб`;
 }
 
+function getWorkDate() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const dateParam = urlParams.get('work-date');
+    if (dateParam && /^\d{4}-\d{2}-\d{2}$/.test(dateParam)) {
+        return dateParam;
+    }
+    return getCurrentDateTimeString().slice(0, 10);
+}
+
+// Обновляет URL с параметром work-date без перезагрузки страницы
+function updateUrlWithDate(date) {
+    const url = new URL(window.location);
+    url.searchParams.set('work-date', date);
+    window.history.replaceState({}, '', url.toString());
+}
+
+
 // делаем функции глобально доступными
 window.startDrag = startDrag;
 window.cancelPendingDrag = cancelPendingDrag;
