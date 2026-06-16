@@ -82,35 +82,33 @@ async function validateAndFix(oldAct, newAct) {
         }
         // 1.2 Изменён только end
         else if (!startChanged && endChanged && !deltaChanged) {
-            if (newAct.end <= newAct.start) {
+            if (newAct.end > newAct.start) {
                 // диалог с двумя вариантами
                 const choice = await showValidationDialog(
-                    'Некорректное время окончания',
-                    `Время окончания (${formatMinutesToTime(newAct.end)}) не может быть меньше или равно времени начала (${formatMinutesToTime(newAct.start)}). Выберите действие:`,
+                    'Изменено только время окончания',
+                    `Время начала: ${formatMinutesToTime(newAct.start)}, время окончания: ${formatMinutesToTime(newAct.end)}), дельта: ${newAct.delta} мин. Выберите действие:`,
                     [
-                        { label: `Сохранить дельту ${newAct.delta} мин, изменить начало на ${formatMinutesToTime(newAct.end - newAct.delta)}`, value: 'shiftStart' },
-                        { label: `Сохранить начало ${formatMinutesToTime(newAct.start)}, изменить дельту на ${newAct.end - newAct.start} мин`, value: 'fixDelta' }
+                        {label: `Сохранить начало ${formatMinutesToTime(newAct.start)}, изменить дельту с ${newAct.delta} на ${newAct.end - newAct.start} мин`, value: 'fixDelta', primary : true},
+                        {label: `Сохранить дельту ${newAct.delta} мин, изменить начало с ${formatMinutesToTime(newAct.start)} на ${formatMinutesToTime(newAct.end - newAct.delta)}`, value: 'shiftStart'}
                     ]
                 );
                 if (choice === null) return null;
                 if (choice === 'shiftStart') {
                     newAct.start = newAct.end - newAct.delta;
-                    if (newAct.start < 0) {
-                        newAct.start = 0;
-                        newAct.end = newAct.delta;
-                    }
                 } else if (choice === 'fixDelta') {
                     newAct.delta = newAct.end - newAct.start;
                 }
-            } else {
-                // end > start – просто сохраняем как есть
+            } else { // end <= start
+                newAct.start = newAct.end - newAct.delta;
             }
+
             // проверка выхода за границы
             if (newAct.start < 0) {
                 newAct.start = 0;
                 newAct.end = newAct.delta;
             }
         }
+
         // 1.3 Изменена только дельта
         else if (!startChanged && !endChanged && deltaChanged) {
             if (newAct.delta > 0) {

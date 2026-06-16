@@ -553,14 +553,15 @@ async function validateAndFix(oldAct, newAct) {
 
 ```javascript
 if (!startChanged && endChanged && !deltaChanged) {
-    if (newAct.end <= newAct.start) {
-        newAct.start = newAct.end - newAct.delta
-    } else {
+    if (newAct.end > newAct.start) {
         /// Показать диалог с 2-мя вариантами:
-        /// Сохранить дельту = newAct.delta и время окончания = newAct.end, изменить время начала с newAct.start на (newAct.end - newAct.delta)
-        /// Сохранить время начала = newAct.start и время окончания = newAct.end, изменить дельту с newAct.delta на (newAct.end - newAct.start)
+        /// Сохранить начало = newAct.start, изменить дельту с newAct.delta на (newAct.end - newAct.start)
+        /// Сохранить дельту = newAct.delta, изменить время начала с newAct.start на (newAct.end - newAct.delta)
         /// При выборе любого варианта применить соответствующую коррекцию полей и продолжить выполнение (перейти к проверке границ и шагу 2).        
         /// И кнопкой "Вернуться к редактированию" -> return null;
+    } else {
+        // Если end меньше или равен start, то просто сдвигаем активность
+        newAct.start = newAct.end - newAct.delta
     }
     if (newAct.start < 0) {
         newAct.start = 0;
