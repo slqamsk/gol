@@ -37,6 +37,9 @@ function calculateColumns(activities) {
 }
 
 function renderActivities() {
+    // Отменяем любое висячее ожидание перетаскивания при перерисовке
+    if (window.cancelPendingDrag) window.cancelPendingDrag();
+
     const blocksContainer = document.getElementById('blocks-container');
     blocksContainer.innerHTML = '';
     if (!currentActivities || currentActivities.length === 0) return;
@@ -79,25 +82,95 @@ function renderActivities() {
             <span class="block-name">${name}</span>
         </div>${commentHtml}`;
         block.dataset.id = act.id;
+
+        // ===== Обработка двойного клика и перетаскивания =====
+        let isDragging = false;
+        let clickCount = 0;
+        let clickTimer = null;
+
+        // Обработчик двойного клика (открывает редактор)
         block.ondblclick = (e) => {
-            if (dragState && dragState.active) {
-                e.preventDefault();
-                return;
-            }
+            e.preventDefault();
+            e.stopPropagation();
+            // Отменяем ожидание перетаскивания
+            if (window.cancelPendingDrag) window.cancelPendingDrag();
+            // Если перетаскивание уже активно, не открываем редактор
+            if (dragState.active) return;
             if (window.openEditModal) openEditModal(act);
         };
 
-        // Drag & Drop
+        // Перетаскивание доступно только для статуса не 'done'
         if (act.status !== 'done') {
             block.addEventListener('mousedown', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
+
+                // Если перетаскивание уже активно – игнорируем
+                if (dragState.active) return;
+
                 const startY = e.clientY;
-                if (window.startDrag) {
-                    window.startDrag(act, block, startY);
-                }
+                let moved = false;
+
+                // Функция для запуска перетаскивания
+                const startDragNow = () => {
+                    if (window.startDrag && !dragState.active && !pendingDrag.cancel) {
+                        window.startDrag(act, block, startY);
+                    }
+                    // Очищаем pending
+                    if (window.cancelPendingDrag) window.cancelPendingDrag();
+                };
+
+                // Отменяем предыдущее ожидание
+                if (window.cancelPendingDrag) window.cancelPendingDrag();
+
+                // Устанавливаем таймаут 200 мс – если за это время не было движения и не было двойного клика, то начинаем перетаскивание
+                pendingDrag.timer = setTimeout(() => {
+                    // Если не было движения и не было отмены – начинаем перетаскивание
+                    if (!moved && !pendingDrag.cancel) {
+                        startDragNow();
+                    }
+                    pendingDrag.timer = null;
+                }, 200);
+
+                // Обработчик движения мыши – если произошло движение, начинаем перетаскивание немедленно
+                const moveHandler = (ev) => {
+                    // Если уже активно перетаскивание – ничего не делаем
+                    if (dragState.active) return;
+                    // Если расстояние больше 5 пикселей, считаем это началом перетаскивания
+                    const dist = Math.abs(ev.clientY - startY);
+                    if (dist > 5) {
+                        moved = true;
+                        // Отменяем таймаут
+                        if (pendingDrag.timer) {
+                            clearTimeout(pendingDrag.timer);
+                            pendingDrag.timer = null;
+                        }
+                        // Запускаем перетаскивание сразу
+                        if (window.startDrag && !dragState.active && !pendingDrag.cancel) {
+                            window.startDrag(act, block, startY);
+                        }
+                        // Убираем обработчик
+                        window.removeEventListener('mousemove', moveHandler);
+                        pendingDrag.moveHandler = null;
+                    }
+                };
+                window.addEventListener('mousemove', moveHandler);
+                pendingDrag.moveHandler = moveHandler;
+
+                // Обработчик mouseup – отменяем ожидание, если не было движения
+                const upHandler = () => {
+                    window.removeEventListener('mousemove', moveHandler);
+                    if (pendingDrag.timer) {
+                        clearTimeout(pendingDrag.timer);
+                        pendingDrag.timer = null;
+                    }
+                    pendingDrag.moveHandler = null;
+                    window.removeEventListener('mouseup', upHandler);
+                };
+                window.addEventListener('mouseup', upHandler);
             });
         }
+
         blocksContainer.appendChild(block);
     }
     updateBalanceDisplay();

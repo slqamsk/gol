@@ -81,6 +81,27 @@ let dragState = {
     cancelFlag: false
 };
 
+// ==================== Отложенное перетаскивание (для предотвращения конфликта с двойным кликом) ====================
+let pendingDrag = {
+    timer: null,
+    moveHandler: null,
+    cancel: false
+};
+
+function cancelPendingDrag() {
+    if (pendingDrag.timer) {
+        clearTimeout(pendingDrag.timer);
+        pendingDrag.timer = null;
+    }
+    if (pendingDrag.moveHandler) {
+        window.removeEventListener('mousemove', pendingDrag.moveHandler);
+        pendingDrag.moveHandler = null;
+    }
+    pendingDrag.cancel = true;
+    // Сбросим флаг через короткое время, чтобы не мешать следующим кликам
+    setTimeout(() => { pendingDrag.cancel = false; }, 50);
+}
+
 function startDrag(activity, element, clientY) {
     if (dragState.active) return;
     dragState.active = true;
@@ -263,3 +284,4 @@ function updateBalanceDisplay() {
 
 // делаем функции глобально доступными
 window.startDrag = startDrag;
+window.cancelPendingDrag = cancelPendingDrag;
