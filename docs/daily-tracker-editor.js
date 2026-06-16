@@ -18,9 +18,11 @@ const actEndNow = document.getElementById('act-end-now');
 const actDelete = document.getElementById('act-delete');
 const actCancel = document.getElementById('act-cancel');
 const actSave = document.getElementById('act-save');
+const actSaveAndAdd = document.getElementById('act-save-and-add');
 const activityModalTitle = document.getElementById('activity-modal-title');
 const statusBtns = document.querySelectorAll('.status-btn');
 const addActivityBtn = document.getElementById('add-activity-btn');
+
 
 // Вспомогательные функции для формы
 function buildRanksSelect() {
@@ -224,15 +226,15 @@ function setEndNow() {
     document.querySelector('.status-btn[data-status="done"]').classList.add('active');
 }
 
-function openAddModal() {
+function openAddModal(startMinutes) {
     currentEditingId = null;
     activityModalTitle.textContent = 'Новое дело';
     actDelete.style.display = 'none';
-    const now = new Date();
-    const startMin = now.getHours() * 60 + Math.round(now.getMinutes() / 1) * 1;
-    const endMin = startMin + 60;
-    actStart.value = formatMinutesToTime(startMin);
-    actEnd.value = formatMinutesToTime(endMin);
+    // Если startMinutes не передан, использовать текущее время
+    let start = (startMinutes !== undefined) ? startMinutes : (new Date().getHours() * 60 + Math.round(new Date().getMinutes() / 1) * 1);
+    let end = start + 60;
+    actStart.value = formatMinutesToTime(start);
+    actEnd.value = formatMinutesToTime(end);
     actDelta.value = 60;
     actActive.value = 60;
     actIntBreaks.value = 0;
@@ -264,6 +266,7 @@ function initEditor() {
     addActivityBtn.onclick = openAddModal;
     actCancel.onclick = closeActivityModal;
     actSave.onclick = saveActivity;
+    actSaveAndAdd.onclick = saveAndAddActivity;
     actDelete.onclick = deleteActivity;
     actStartNow.onclick = setStartNow;
     actEndNow.onclick = setEndNow;
@@ -275,4 +278,45 @@ function initEditor() {
             btn.classList.add('active');
         };
     });
+}
+
+
+
+
+async function saveAndAddActivity() {
+    const draft = readFormToDraft();
+    if (!draft.action) {
+        showStatus('Выберите активность', true);
+        return;
+    }
+    const oldAct = currentEditingId ? currentActivities.find(a => a.id === currentEditingId) : null;
+    const fixed = await validateAndFix(oldAct, draft);
+    if (fixed === null) return; // пользователь отменил
+
+    // Сохраняем активность (логика идентична saveActivity)
+    let dayEntry = ensureScheduleExists(currentDate);
+    const activities = dayEntry.schedule.activities;
+    if (currentEditingId) {
+        const index = activities.findIndex(a => a.id === currentEditingId);
+        if (index !== -1) {
+            fixed.id = currentEditingId;
+            activities[index] = fixed;
+        }
+    } else {
+        fixed.id = getNextIdForDay();
+        activities.push(fixed);
+    }
+    activities.sort((a,b) => a.start - b.start);
+    currentActivities = activities;
+    dayEntry.current_datetime = getCurrentDateTimeString();
+    saveToLocalStorage();
+    renderActivities();
+
+    // Закрыть текущее модальное окно
+    closeActivityModal();
+
+    // Открыть новую активность, начиная с времени окончания сохранённой
+    openAddModal(fixed.end);
+
+    showStatus('Активность сохранена, создаём новую');
 }
