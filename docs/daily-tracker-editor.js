@@ -19,6 +19,7 @@ const actDelete = document.getElementById('act-delete');
 const actCancel = document.getElementById('act-cancel');
 const actSave = document.getElementById('act-save');
 const actSaveAndAdd = document.getElementById('act-save-and-add');
+const actCopy = document.getElementById('act-copy');
 const activityModalTitle = document.getElementById('activity-modal-title');
 const statusBtns = document.querySelectorAll('.status-btn');
 const addActivityBtn = document.getElementById('add-activity-btn');
@@ -196,6 +197,51 @@ function deleteActivity() {
     }
 }
 
+function copyActivity() {
+    if (!currentEditingId) return;
+    
+    // Найти активность для копирования
+    const original = currentActivities.find(a => a.id === currentEditingId);
+    if (!original) {
+        showStatus('Ошибка: активность не найдена', true);
+        return;
+    }
+    
+    // Получить текущее время (округляем до минуты)
+    const now = new Date();
+    const startMinutes = now.getHours() * 60 + now.getMinutes();
+    
+    // Создать копию с новыми значениями
+    const copy = {
+        ...original,
+        id: getNextIdForDay(),
+        start: startMinutes,
+        end: startMinutes + original.delta,
+        status: 'planned'
+    };
+    
+    // Если end выходит за границы дня, скорректировать
+    if (copy.end > 1440) {
+        copy.end = 1440;
+        copy.start = 1440 - copy.delta;
+    }
+    
+    // Добавить в расписание
+    const dayEntry = ensureScheduleExists(currentDate);
+    dayEntry.schedule.activities.push(copy);
+    dayEntry.current_datetime = getCurrentDateTimeString();
+    
+    // Сортировка и сохранение
+    dayEntry.schedule.activities.sort((a, b) => a.start - b.start);
+    currentActivities = dayEntry.schedule.activities;
+    saveToLocalStorage();
+    renderActivities();
+    closeActivityModal();
+    
+    showStatus('Активность скопирована');
+}
+
+
 function setStartNow() {
     const now = new Date();
     const minutes = now.getHours() * 60 + Math.round(now.getMinutes() / 1) * 1;
@@ -230,6 +276,7 @@ function openAddModal(startMinutes) {
     currentEditingId = null;
     activityModalTitle.textContent = 'Новое дело';
     actDelete.style.display = 'none';
+    actCopy.style.display = 'none'; 
     // Если startMinutes не передан, использовать текущее время
     let start = (startMinutes !== undefined) ? startMinutes : (new Date().getHours() * 60 + Math.round(new Date().getMinutes() / 1) * 1);
     let end = start + 60;
@@ -250,6 +297,7 @@ function openEditModal(activity) {
     currentEditingId = activity.id;
     activityModalTitle.textContent = 'Редактирование активности';
     actDelete.style.display = 'block';
+    actCopy.style.display = 'block';  // <-- ПОКАЗЫВАЕМ КНОПКУ
     // Сначала построить селекты (ранги, категории, активности)
     buildRanksSelect();
     // Затем загрузить значения активности
@@ -268,6 +316,7 @@ function initEditor() {
     actSave.onclick = saveActivity;
     actSaveAndAdd.onclick = saveAndAddActivity;
     actDelete.onclick = deleteActivity;
+    actCopy.onclick = copyActivity;
     actStartNow.onclick = setStartNow;
     actEndNow.onclick = setEndNow;
     actRank.onchange = onRankChange;
