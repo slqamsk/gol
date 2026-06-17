@@ -263,7 +263,7 @@ function closeActivityModal() {
 
 // Привязка обработчиков
 function initEditor() {
-    addActivityBtn.onclick = openAddModal;
+    addActivityBtn.onclick = () => openAddModal();
     actCancel.onclick = closeActivityModal;
     actSave.onclick = saveActivity;
     actSaveAndAdd.onclick = saveAndAddActivity;
