@@ -209,7 +209,7 @@ function copyActivity() {
     
     // Получить текущее время (округляем до минуты)
     const now = new Date();
-    const startMinutes = now.getHours() * 60 + now.getMinutes();
+    const startMinutes = now.getHours() * 60 + Math.round(now.getMinutes() / 1) * 1;
     
     // Создать копию с новыми значениями
     const copy = {
