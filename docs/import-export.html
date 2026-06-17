@@ -13,28 +13,54 @@
 
     <textarea id="json-editor" placeholder="JSON расписания (ScheduleEntry или массив ScheduleEntry[])"></textarea>
 
-    <div class="button-group">
-        <button id="load-single" class="button">Загрузить одну дату</button>
-        <button id="load-multiple" class="button">Загрузить выбранные даты</button>
-        <button id="apply-single" class="button">Применить одну дату</button>
-        <button id="apply-multiple" class="button">Применить несколько дат</button>
-        <button id="clear-editor" class="button">Очистить редактор</button>
-        <button id="refresh-list" class="button">Обновить список дат</button>
-    </div>
 
-    <div class="dates-panel">
-        <div class="dates-header">
-            <span>📅 Список дат в хранилище</span>
-            <div class="dates-actions">
-                <button id="select-all" class="button small">Выбрать все</button>
-                <button id="deselect-all" class="button small">Сбросить все</button>
-                <button id="delete-selected" class="button small" style="background:#dc2626;">Удалить выбранные</button>
+    <div class="button-group" style="display: flex; gap: 20px; align-items: flex-start; flex-wrap: nowrap; width: fit-content; max-width: 100%; overflow-x: auto;">
+        <!-- Колонка 1 -->
+        <div style="display: flex; flex-direction: column; gap: 6px; flex: 0 0 auto;">
+            <button id="load-single" class="button" style="white-space: nowrap;">Загрузить одну дату</button>
+            <div style="display: flex; gap: 6px; flex-wrap: nowrap;">
+                <button id="apply-single" class="button" style="white-space: nowrap;">Применить одну дату</button>
+                <button id="copy-schedule" class="button" style="white-space: nowrap;">Копировать расписание</button>
             </div>
         </div>
-        <div id="dates-list" class="dates-list">
+        
+        <!-- Колонка 2 -->
+        <div style="display: flex; flex-direction: column; gap: 6px; flex: 0 0 auto;">
+            <button id="load-multiple" class="button" style="white-space: nowrap;">Загрузить выбранные даты</button>
+            <button id="apply-multiple" class="button" style="white-space: nowrap;">Применить несколько дат</button>
+        </div>
+        
+        <!-- Колонка 3 -->
+        <div style="display: flex; flex-direction: column; gap: 6px; flex: 0 0 auto;">
+            <button id="clear-editor" class="button" style="white-space: nowrap;">Очистить редактор</button>
+            <button id="refresh-list" class="button" style="white-space: nowrap;">Обновить список дат</button>
+        </div>
+        
+        <!-- Колонка 4 -->
+        <div style="display: flex; flex-direction: column; gap: 6px; flex: 0 0 auto; justify-content: flex-end;">
+            <div style="height: 34px;"></div>
+            <button id="delete-schedule" class="button" style="white-space: nowrap; background:#dc2626; color:white;">Удалить расписание</button>
+        </div>
+    </div>
+
+
+    <div class="dates-panel" style="width: fit-content; max-width: 100%;">
+        <div class="dates-header" style="display: flex; gap: 20px; align-items: center; flex-wrap: nowrap;">
+            <span>📅 Список дат в хранилище</span>
+            <div class="dates-actions" style="display: flex; gap: 6px; flex-wrap: nowrap;">
+                <button id="select-all" class="button small" style="white-space: nowrap;">Выбрать все</button>
+                <button id="deselect-all" class="button small" style="white-space: nowrap;">Сбросить все</button>
+                <button id="delete-selected" class="button small" style="white-space: nowrap; background:#dc2626;">Удалить выбранные</button>
+            </div>
+        </div>
+        <div id="dates-list" class="dates-list" style="width: fit-content;">
             <!-- чекбоксы с датами будут добавлены динамически -->
         </div>
     </div>
+
+
+
+
 </div>
 
 <!-- Модальное окно для подтверждения -->

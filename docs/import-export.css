@@ -66,3 +66,8 @@
     gap: 12px;
     justify-content: flex-end;
 }
+
+.dates-list {
+    max-height: none !important;
+    overflow-y: visible !important;
+}

@@ -17,6 +17,8 @@ const refreshListBtn = document.getElementById('refresh-list');
 const selectAllBtn = document.getElementById('select-all');
 const deselectAllBtn = document.getElementById('deselect-all');
 const deleteSelectedBtn = document.getElementById('delete-selected');
+const deleteScheduleBtn = document.getElementById('delete-schedule');
+const copyScheduleBtn = document.getElementById('copy-schedule');
 const confirmModal = document.getElementById('confirm-modal');
 const confirmMessage = document.getElementById('confirm-message');
 const confirmYes = document.getElementById('confirm-yes');
@@ -34,6 +36,23 @@ function showStatus(msg, isError = false) {
 
 function formatJSON(data) {
     return JSON.stringify(data, null, '\t');
+}
+
+function formatMinutesToTime(minutes) {
+    minutes = Math.max(0, Math.min(minutes, 1440));
+    const h = Math.floor(minutes / 60);
+    const m = minutes % 60;
+    return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
+}
+
+function getActivityName(activityTypeId) {
+    // Пытаемся получить имя активности из categoriesData
+    // Если categoriesData недоступен, возвращаем ID
+    if (typeof categoriesData !== 'undefined' && categoriesData && categoriesData.activity_types) {
+        const act = categoriesData.activity_types.find(a => a.id === activityTypeId);
+        if (act) return act.name;
+    }
+    return `ID:${activityTypeId}`;
 }
 
 // ---- ВАЛИДАЦИЯ SchedulesRoot (с учётом current_datetime) ----
@@ -89,7 +108,7 @@ function loadFromLocalStorage() {
         if (isValidSchedulesRoot(parsed)) {
             currentSchedulesRoot = parsed;
             sortSchedulesByDate();
-            saveToLocalStorage(); // пересохраним отсортированными
+            saveToLocalStorage();
             showStatus('Данные в localStorage корректны');
             renderDatesList();
         } else {
@@ -322,12 +341,232 @@ async function deleteSelectedDates() {
     jsonEditor.value = '';
 }
 
-// ---- МОДАЛЬНОЕ ОКНО ПОДТВЕРЖДЕНИЯ ----
+// ---- УДАЛЕНИЕ ОДНОЙ ДАТЫ (С ДВУМЯ ПРЕДУПРЕЖДЕНИЯМИ) ----
+async function deleteSelectedDate() {
+    const selected = getSelectedDates();
+    if (selected.length !== 1) {
+        showStatus('Ошибка: выберите ровно одну дату', true);
+        return;
+    }
+    const date = selected[0];
+    const entry = currentSchedulesRoot.schedules.find(s => s.date === date);
+    if (!entry) {
+        showStatus(`Ошибка: дата ${date} не найдена в хранилище`, true);
+        return;
+    }
+    
+    const activities = entry.schedule.activities || [];
+
+    if (activities.length === 0) {
+        // ---- УДАЛЯЕМ ПУСТОЕ РАСПИСАНИЕ С СООБЩЕНИЕМ ----
+        currentSchedulesRoot.schedules = currentSchedulesRoot.schedules.filter(s => s.date !== date);
+        sortSchedulesByDate();
+        saveToLocalStorage();
+        renderDatesList();
+        jsonEditor.value = '';
+        const chk = document.getElementById(`chk_${date}`);
+        if (chk) chk.checked = false;
+        showStatus(`Расписание за ${date} пустое и было удалено`, false);
+        return;
+    }
+
+
+    // ---- ПЕРВОЕ ПРЕДУПРЕЖДЕНИЕ: список активностей ----
+    let activitiesList = activities.map((act, index) => {
+        const name = getActivityName(act.activityTypeId);
+        const time = `${formatMinutesToTime(act.start)} — ${formatMinutesToTime(act.end)}`;
+        return `  ${index + 1}. ${name} (${time})`;
+    }).join('\n');
+    
+    const firstConfirm = await showConfirmWithList(
+        `В расписании за ${date} есть следующие активности:`,
+        activitiesList,
+        `Точно хотите удалить день с ${activities.length} активностями?`
+    );
+
+
+    if (!firstConfirm) {
+        const chk = document.getElementById(`chk_${date}`);
+        if (chk) chk.checked = false;
+        return;
+    }
+    
+    // ---- ВТОРОЕ ПРЕДУПРЕЖДЕНИЕ: подтверждение удаления ----
+    const secondConfirm = await showConfirm(
+        `Вы решили удалить день ${date} с ${activities.length} активностями. Подтвердите удаление.`
+    );
+    if (!secondConfirm) {
+        const chk = document.getElementById(`chk_${date}`);
+        if (chk) chk.checked = false;
+        return;
+    }
+    
+    // ---- УДАЛЕНИЕ ----
+    currentSchedulesRoot.schedules = currentSchedulesRoot.schedules.filter(s => s.date !== date);
+    sortSchedulesByDate();
+    saveToLocalStorage();
+    renderDatesList();
+    jsonEditor.value = '';
+    showStatus(`Расписание за ${date} удалено (активностей: ${activities.length})`);
+}
+
+// ---- КОПИРОВАНИЕ РАСПИСАНИЯ ----
+async function copySchedule() {
+    // 1. Проверяем, что в редакторе есть данные
+    const text = jsonEditor.value.trim();
+    if (!text) {
+        showStatus('Ошибка: редактор пуст. Сначала загрузите расписание.', true);
+        return;
+    }
+    
+    // 2. Парсим JSON
+    let parsed;
+    try {
+        parsed = JSON.parse(text);
+    } catch(e) {
+        showStatus(`Ошибка парсинга JSON: ${e.message}`, true);
+        return;
+    }
+    
+    // 3. Проверяем, что это ScheduleEntry (одна дата)
+    if (!isScheduleEntry(parsed)) {
+        showStatus('Ошибка: содержимое редактора не соответствует формату ScheduleEntry (одна дата).', true);
+        return;
+    }
+    
+    // 4. Проверяем, что в расписании есть активности
+    const activities = parsed.schedule.activities || [];
+    if (activities.length === 0) {
+        showStatus('Ошибка: расписание пустое (нет активностей). Копировать нечего.', true);
+        return;
+    }
+    
+    // 5. Спрашиваем дату для копирования
+    const targetDate = await showDatePicker('Введите дату для копирования расписания:');
+    if (!targetDate) {
+        showStatus('Копирование отменено');
+        return;
+    }
+    
+    // 6. Проверяем, что на эту дату нет расписания в localStorage
+    const existing = currentSchedulesRoot.schedules.find(s => s.date === targetDate);
+    if (existing) {
+        showStatus(`Невозможно скопировать, перед копированием удалите расписание за ${targetDate}`, true);
+        return;
+    }
+    
+    // 7. Создаём копию расписания
+    const copyEntry = {
+        date: targetDate,
+        current_datetime: getCurrentDateTimeString(),
+        schedule: {
+            activities: activities.map(act => ({
+                ...act,
+                id: act.id,
+                status: 'planned'
+            }))
+        }
+    };
+    
+    // 8. Добавляем в хранилище
+    currentSchedulesRoot.schedules.push(copyEntry);
+    sortSchedulesByDate();
+    saveToLocalStorage();
+    renderDatesList();
+    
+    // 9. Очищаем чекбоксы
+    const allCheckboxes = document.querySelectorAll('#dates-list input[type="checkbox"]');
+    allCheckboxes.forEach(cb => cb.checked = false);
+    
+    // 10. Выводим сообщение
+    showStatus(`Расписание скопировано с ${parsed.date} на ${targetDate} (активностей: ${activities.length})`);
+}
+
+// ---- МОДАЛЬНОЕ ОКНО ПОДТВЕРЖДЕНИЯ (ОБЫЧНОЕ) ----
 function showConfirm(message) {
     return new Promise((resolve) => {
         confirmMessage.textContent = message;
         confirmModal.classList.add('active');
         pendingConfirmCallback = resolve;
+    });
+}
+
+// ---- МОДАЛЬНОЕ ОКНО С ПОДТВЕРЖДЕНИЕМ И СПИСКОМ ----
+function showConfirmWithList(title, list, question) {
+    return new Promise((resolve) => {
+        const listItems = list.split('\n').map(item => `<li>${item}</li>`).join('');
+        confirmMessage.innerHTML = `
+            <strong>${title}</strong>
+            <ul style="margin: 10px 0 10px 20px; max-height: 200px; overflow-y: auto; font-size: 13px; font-family: monospace;">
+                ${listItems}
+            </ul>
+            <p style="margin-top: 10px;"><strong>${question}</strong></p>
+        `;
+        confirmModal.classList.add('active');
+        pendingConfirmCallback = resolve;
+    });
+}
+
+// ---- МОДАЛЬНОЕ ОКНО С ВЫБОРОМ ДАТЫ ----
+function showDatePicker(label) {
+    return new Promise((resolve) => {
+        const overlay = document.createElement('div');
+        overlay.className = 'modal-overlay active';
+        overlay.style.display = 'flex';
+        
+        const content = document.createElement('div');
+        content.className = 'modal-content';
+        content.style.maxWidth = '400px';
+        
+        content.innerHTML = `
+            <h3>${label}</h3>
+            <div style="margin: 15px 0;">
+                <input type="date" id="date-picker-input" style="width: 100%; padding: 8px; font-size: 16px;">
+            </div>
+            <div class="modal-buttons">
+                <button id="date-picker-ok" class="button">Копировать</button>
+                <button id="date-picker-cancel" class="button secondary">Отмена</button>
+            </div>
+        `;
+        
+        overlay.appendChild(content);
+        document.body.appendChild(overlay);
+        
+        const input = document.getElementById('date-picker-input');
+        const today = getCurrentDateTimeString().slice(0, 10);
+        input.value = today;
+        input.focus();
+        
+        const okBtn = document.getElementById('date-picker-ok');
+        const cancelBtn = document.getElementById('date-picker-cancel');
+        
+        const cleanup = () => {
+            if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+        };
+        
+        okBtn.onclick = () => {
+            const value = input.value;
+            cleanup();
+            resolve(value || null);
+        };
+        
+        cancelBtn.onclick = () => {
+            cleanup();
+            resolve(null);
+        };
+        
+        overlay.onclick = (e) => {
+            if (e.target === overlay) {
+                cleanup();
+                resolve(null);
+            }
+        };
+        
+        input.onkeydown = (e) => {
+            if (e.key === 'Enter') {
+                okBtn.click();
+            }
+        };
     });
 }
 
@@ -383,6 +622,8 @@ function init() {
     selectAllBtn.onclick = selectAll;
     deselectAllBtn.onclick = deselectAll;
     if (deleteSelectedBtn) deleteSelectedBtn.onclick = deleteSelectedDates;
+    if (deleteScheduleBtn) deleteScheduleBtn.onclick = deleteSelectedDate;
+    if (copyScheduleBtn) copyScheduleBtn.onclick = copySchedule;
 }
 
 init();
