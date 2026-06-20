@@ -28,23 +28,7 @@ function clearStatus() {
     statusBox.style.display = 'none';
 }
 
-function formatMinutesToTime(minutes) {
-    minutes = Math.max(0, Math.min(minutes, 1440));
-    const h = Math.floor(minutes / 60);
-    const m = minutes % 60;
-    return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
-}
 
-function timeStrToMinutes(timeStr) {
-    if (!timeStr) return 0;
-    const [h, m] = timeStr.split(':').map(Number);
-    return h * 60 + (m || 0);
-}
-
-function formatDuration(minutes) {
-    const total = Math.max(0, Math.round(minutes));
-    return `${Math.floor(total / 60).toString().padStart(2, '0')}:${(total % 60).toString().padStart(2, '0')}`;
-}
 
 function getContrastColor(hexOrName) {
     const canvas = document.createElement('canvas');
@@ -56,16 +40,6 @@ function getContrastColor(hexOrName) {
     const [r, g, b] = ctx.getImageData(0, 0, 1, 1).data;
     const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
     return luminance > 0.5 ? '#0f172a' : '#ffffff';
-}
-
-// Возвращает строку с текущим московским временем в формате ISO 8601 с часовым поясом +03:00
-// Пример: "2026-06-08T13:54:22+03:00"
-function getCurrentDateTimeString() {
-    const now = new Date();
-    // Добавляем 3 часа (10800000 мс) для перехода из UTC в московское время
-    const mskTime = new Date(now.getTime() + 3 * 60 * 60 * 1000);
-    // toISOString возвращает UTC, но мы уже сдвинули время, и заменяем Z на +03:00
-    return mskTime.toISOString().replace('Z', '+03:00');
 }
 
 // ==================== Drag and Drop State ====================

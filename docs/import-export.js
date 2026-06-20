@@ -38,13 +38,6 @@ function formatJSON(data) {
     return JSON.stringify(data, null, '\t');
 }
 
-function formatMinutesToTime(minutes) {
-    minutes = Math.max(0, Math.min(minutes, 1440));
-    const h = Math.floor(minutes / 60);
-    const m = minutes % 60;
-    return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
-}
-
 function getActivityName(activityTypeId) {
     // Пытаемся получить имя активности из categoriesData
     // Если categoriesData недоступен, возвращаем ID

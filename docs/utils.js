@@ -48,6 +48,7 @@ function formatMinutesToTime(minutes) {
     return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
 }
 
+
 /**
  * Преобразует строку времени HH:MM в минуты
  * @param {string} timeStr - время в формате HH:MM

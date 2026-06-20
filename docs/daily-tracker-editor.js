@@ -208,8 +208,7 @@ function copyActivity() {
     }
     
     // Получить текущее время (округляем до минуты)
-    const now = new Date();
-    const startMinutes = now.getHours() * 60 + Math.round(now.getMinutes() / 1) * 1;
+    const startMinutes = getCurrentMinutes();
     
     // Создать копию с новыми значениями
     const copy = {
@@ -243,8 +242,7 @@ function copyActivity() {
 
 
 function setStartNow() {
-    const now = new Date();
-    const minutes = now.getHours() * 60 + Math.round(now.getMinutes() / 1) * 1;
+    const minutes = getCurrentMinutes();
     actStart.value = formatMinutesToTime(minutes);
     const delta = parseInt(actDelta.value);
     if (!isNaN(delta)) {
@@ -256,8 +254,7 @@ function setStartNow() {
 }
 
 function setEndNow() {
-    const now = new Date();
-    const minutes = now.getHours() * 60 + Math.round(now.getMinutes() / 1) * 1;
+    const minutes = getCurrentMinutes();
     actEnd.value = formatMinutesToTime(minutes);
     const startMin = timeStrToMinutes(actStart.value);
     const delta = minutes - startMin;
@@ -278,7 +275,7 @@ function openAddModal(startMinutes) {
     actDelete.style.display = 'none';
     actCopy.style.display = 'none'; 
     // Если startMinutes не передан, использовать текущее время
-    let start = (startMinutes !== undefined) ? startMinutes : (new Date().getHours() * 60 + Math.round(new Date().getMinutes() / 1) * 1);
+    let start = (startMinutes !== undefined) ? startMinutes : getCurrentMinutes();
     let end = start + 60;
     actStart.value = formatMinutesToTime(start);
     actEnd.value = formatMinutesToTime(end);

@@ -206,8 +206,7 @@ function updateCurrentTimeLine() {
         currentTimeLine.style.display = 'none';
         return;
     }
-    const now = new Date();
-    const minutes = now.getHours() * 60 + now.getMinutes();
+    const minutes = getCurrentMinutes();
     const top = minutes;
     if (top >= 0 && top <= 1440) {
         currentTimeLine.style.display = 'block';
