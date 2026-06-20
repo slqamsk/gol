@@ -1,27 +1,39 @@
 // utils.js
 // Универсальные вспомогательные функции для всех страниц
 
+// Локальная временная зона: +3 часа (Москва)
+// При необходимости изменить на другую зону, достаточно поменять это значение
+const LOCAL_TIMEZONE_OFFSET_HOURS = 3;
+
 /**
- * Возвращает текущее московское время в минутах от полуночи.
- * Секунды отбрасываются (округление вниз до целой минуты).
- * @returns {number} количество минут от 0 до 1439
+ * Возвращает объект Date с текущим временем в локальной временной зоне.
+ * @returns {Date}
  */
-function getCurrentMinutes() {
+function getLocalTime() {
     const now = new Date();
-    // Берём UTC-время и добавляем 3 часа (как в getCurrentDateTimeString)
-    const mskTime = new Date(now.getTime() + 3 * 60 * 60 * 1000);
-    return mskTime.getUTCHours() * 60 + mskTime.getUTCMinutes();
+    return new Date(now.getTime() + LOCAL_TIMEZONE_OFFSET_HOURS * 60 * 60 * 1000);
 }
 
 /**
- * Возвращает строку с текущим московским временем в формате ISO 8601 с часовым поясом +03:00
+ * Возвращает строку с текущим временем в формате ISO 8601 с указанием локальной временной зоны.
  * Пример: "2026-06-08T13:54:22+03:00"
  * @returns {string}
  */
 function getCurrentDateTimeString() {
-    const now = new Date();
-    const mskTime = new Date(now.getTime() + 3 * 60 * 60 * 1000);
-    return mskTime.toISOString().replace('Z', '+03:00');
+    const localTime = getLocalTime();
+    const offsetStr = (LOCAL_TIMEZONE_OFFSET_HOURS >= 0 ? '+' : '-') + 
+                      String(Math.abs(LOCAL_TIMEZONE_OFFSET_HOURS)).padStart(2, '0') + ':00';
+    return localTime.toISOString().replace('Z', offsetStr);
+}
+
+/**
+ * Возвращает текущее время в минутах от полуночи (в локальной временной зоне).
+ * Секунды отбрасываются (округление вниз до целой минуты).
+ * @returns {number} количество минут от 0 до 1439
+ */
+function getCurrentMinutes() {
+    const localTime = getLocalTime();
+    return localTime.getUTCHours() * 60 + localTime.getUTCMinutes();
 }
 
 /**
