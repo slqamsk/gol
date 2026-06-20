@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Тестирование утилит</title>
+</head>
+<body>
+    <h1>Тестирование утилит (utils.js)</h1>
+    
+    <hr>
+    
+    <h2>getCurrentDateTimeString()</h2>
+    <p id="current-datetime"></p>
+    
+    <hr>
+    
+    <h2>getCurrentMinutes()</h2>
+    <p id="current-minutes"></p>
+    
+    <hr>
+    
+    <h2>formatMinutesToTime()</h2>
+    <table border="1" cellpadding="8">
+        <tr>
+            <th>Вход (минуты)</th>
+            <th>Результат</th>
+        </tr>
+        <tr><td>0</td><td id="fmt-0"></td></tr>
+        <tr><td>30</td><td id="fmt-30"></td></tr>
+        <tr><td>60</td><td id="fmt-60"></td></tr>
+        <tr><td>90</td><td id="fmt-90"></td></tr>
+        <tr><td>480</td><td id="fmt-480"></td></tr>
+        <tr><td>1439</td><td id="fmt-1439"></td></tr>
+        <tr><td>1440</td><td id="fmt-1440"></td></tr>
+        <tr><td>1500 (выход за границу)</td><td id="fmt-1500"></td></tr>
+        <tr><td>-10 (выход за границу)</td><td id="fmt--10"></td></tr>
+    </table>
+    
+    <hr>
+    
+    <h2>timeStrToMinutes()</h2>
+    <table border="1" cellpadding="8">
+        <tr>
+            <th>Вход (HH:MM)</th>
+            <th>Результат</th>
+        </tr>
+        <tr><td>"00:00"</td><td id="tst-0000"></td></tr>
+        <tr><td>"00:30"</td><td id="tst-0030"></td></tr>
+        <tr><td>"01:00"</td><td id="tst-0100"></td></tr>
+        <tr><td>"08:00"</td><td id="tst-0800"></td></tr>
+        <tr><td>"23:59"</td><td id="tst-2359"></td></tr>
+        <tr><td>"" (пустая строка)</td><td id="tst-empty"></td></tr>
+        <tr><td>"invalid"</td><td id="tst-invalid"></td></tr>
+    </table>
+    
+    <hr>
+    
+    <h2>formatDuration()</h2>
+    <table border="1" cellpadding="8">
+        <tr>
+            <th>Вход (минуты)</th>
+            <th>Результат</th>
+        </tr>
+        <tr><td>0</td><td id="dur-0"></td></tr>
+        <tr><td>30</td><td id="dur-30"></td></tr>
+        <tr><td>60</td><td id="dur-60"></td></tr>
+        <tr><td>90</td><td id="dur-90"></td></tr>
+        <tr><td>125</td><td id="dur-125"></td></tr>
+        <tr><td>480</td><td id="dur-480"></td></tr>
+        <tr><td>1440</td><td id="dur-1440"></td></tr>
+        <tr><td>-30 (отрицательное)</td><td id="dur--30"></td></tr>
+    </table>
+    
+    <hr>
+    
+    <h2>Круговая проверка (formatMinutesToTime ⇄ timeStrToMinutes)</h2>
+    <p>Тест: для каждого значения из диапазона [0, 1440] с шагом 60 минут</p>
+    <ul>
+        <li id="roundtrip-0"></li>
+        <li id="roundtrip-60"></li>
+        <li id="roundtrip-120"></li>
+        <li id="roundtrip-180"></li>
+        <li id="roundtrip-240"></li>
+        <li id="roundtrip-300"></li>
+        <li id="roundtrip-360"></li>
+        <li id="roundtrip-420"></li>
+        <li id="roundtrip-480"></li>
+        <li id="roundtrip-540"></li>
+        <li id="roundtrip-600"></li>
+        <li id="roundtrip-660"></li>
+        <li id="roundtrip-720"></li>
+        <li id="roundtrip-780"></li>
+        <li id="roundtrip-840"></li>
+        <li id="roundtrip-900"></li>
+        <li id="roundtrip-960"></li>
+        <li id="roundtrip-1020"></li>
+        <li id="roundtrip-1080"></li>
+        <li id="roundtrip-1140"></li>
+        <li id="roundtrip-1200"></li>
+        <li id="roundtrip-1260"></li>
+        <li id="roundtrip-1320"></li>
+        <li id="roundtrip-1380"></li>
+        <li id="roundtrip-1440"></li>
+    </ul>
+
+    <script src="utils.js"></script>
+    <script>
+        // ---- getCurrentDateTimeString ----
+        document.getElementById('current-datetime').textContent = getCurrentDateTimeString();
+        
+        // ---- getCurrentMinutes ----
+        document.getElementById('current-minutes').textContent = getCurrentMinutes() + ' мин';
+        
+        // ---- formatMinutesToTime ----
+        document.getElementById('fmt-0').textContent = formatMinutesToTime(0);
+        document.getElementById('fmt-30').textContent = formatMinutesToTime(30);
+        document.getElementById('fmt-60').textContent = formatMinutesToTime(60);
+        document.getElementById('fmt-90').textContent = formatMinutesToTime(90);
+        document.getElementById('fmt-480').textContent = formatMinutesToTime(480);
+        document.getElementById('fmt-1439').textContent = formatMinutesToTime(1439);
+        document.getElementById('fmt-1440').textContent = formatMinutesToTime(1440);
+        document.getElementById('fmt-1500').textContent = formatMinutesToTime(1500);
+        document.getElementById('fmt--10').textContent = formatMinutesToTime(-10);
+        
+        // ---- timeStrToMinutes ----
+        document.getElementById('tst-0000').textContent = timeStrToMinutes('00:00');
+        document.getElementById('tst-0030').textContent = timeStrToMinutes('00:30');
+        document.getElementById('tst-0100').textContent = timeStrToMinutes('01:00');
+        document.getElementById('tst-0800').textContent = timeStrToMinutes('08:00');
+        document.getElementById('tst-2359').textContent = timeStrToMinutes('23:59');
+        document.getElementById('tst-empty').textContent = timeStrToMinutes('');
+        document.getElementById('tst-invalid').textContent = timeStrToMinutes('invalid');
+        
+        // ---- formatDuration ----
+        document.getElementById('dur-0').textContent = formatDuration(0);
+        document.getElementById('dur-30').textContent = formatDuration(30);
+        document.getElementById('dur-60').textContent = formatDuration(60);
+        document.getElementById('dur-90').textContent = formatDuration(90);
+        document.getElementById('dur-125').textContent = formatDuration(125);
+        document.getElementById('dur-480').textContent = formatDuration(480);
+        document.getElementById('dur-1440').textContent = formatDuration(1440);
+        document.getElementById('dur--30').textContent = formatDuration(-30);
+        
+        // ---- Круговая проверка ----
+        function testRoundtrip(minutes) {
+            const timeStr = formatMinutesToTime(minutes);
+            const result = timeStrToMinutes(timeStr);
+            const ok = result === minutes;
+            return `${minutes} мин → "${timeStr}" → ${result} мин ${ok ? '✅' : '❌'}`;
+        }
+        
+        for (let m = 0; m <= 1440; m += 60) {
+            const el = document.getElementById('roundtrip-' + m);
+            if (el) el.textContent = testRoundtrip(m);
+        }
+    </script>
+</body>
+</html>
