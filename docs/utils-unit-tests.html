@@ -16,6 +16,7 @@
     
     <h2>getCurrentMinutes()</h2>
     <p id="current-minutes"></p>
+    <p id="current-minutes-readable"></p>
     
     <hr>
     
@@ -109,7 +110,11 @@
         document.getElementById('current-datetime').textContent = getCurrentDateTimeString();
         
         // ---- getCurrentMinutes ----
-        document.getElementById('current-minutes').textContent = getCurrentMinutes() + ' мин';
+        const mins = getCurrentMinutes();
+        const hours = Math.floor(mins / 60);
+        const minutes = mins % 60;
+        document.getElementById('current-minutes').textContent = mins + ' мин';
+        document.getElementById('current-minutes-readable').textContent = mins + ' / 60 = ' + (mins / 60).toFixed(3) + ', т.е. ' + hours + ' часов ' + minutes + ' минут';
         
         // ---- formatMinutesToTime ----
         document.getElementById('fmt-0').textContent = formatMinutesToTime(0);
