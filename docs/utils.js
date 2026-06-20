@@ -8,9 +8,9 @@
  */
 function getCurrentMinutes() {
     const now = new Date();
-    // Добавляем 3 часа (10800000 мс) для перехода из UTC в московское время
+    // Берём UTC-время и добавляем 3 часа (как в getCurrentDateTimeString)
     const mskTime = new Date(now.getTime() + 3 * 60 * 60 * 1000);
-    return mskTime.getHours() * 60 + mskTime.getMinutes();
+    return mskTime.getUTCHours() * 60 + mskTime.getUTCMinutes();
 }
 
 /**
